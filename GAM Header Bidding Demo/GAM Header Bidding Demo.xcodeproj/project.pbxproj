@@ -3,16 +3,19 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		5AFED867266AA03A005C2585 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFED866266AA03A005C2585 /* AppDelegate.swift */; };
 		5AFED869266AA03A005C2585 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFED868266AA03A005C2585 /* SceneDelegate.swift */; };
-		5AFED86B266AA03A005C2585 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFED86A266AA03A005C2585 /* ViewController.swift */; };
 		5AFED86E266AA03A005C2585 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5AFED86C266AA03A005C2585 /* Main.storyboard */; };
 		5AFED870266AA03E005C2585 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5AFED86F266AA03E005C2585 /* Assets.xcassets */; };
 		5AFED873266AA03E005C2585 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5AFED871266AA03E005C2585 /* LaunchScreen.storyboard */; };
+		5AFED87B266AAEE4005C2585 /* Banner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFED87A266AAEE4005C2585 /* Banner.swift */; };
+		5AFED87D266AAEF2005C2585 /* MRect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFED87C266AAEF2005C2585 /* MRect.swift */; };
+		5AFED87F266AAF07005C2585 /* Interstitial.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFED87E266AAF07005C2585 /* Interstitial.swift */; };
+		5AFED882266ABDE1005C2585 /* GAMHeaderBidding.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5AFED881266ABDE1005C2585 /* GAMHeaderBidding.storyboard */; };
 		FFFEB1076A9123EC6E62FDDD /* Pods_GAM_Header_Bidding_Demo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4675955F5236AE4EED458425 /* Pods_GAM_Header_Bidding_Demo.framework */; };
 /* End PBXBuildFile section */
 
@@ -21,11 +24,14 @@
 		5AFED863266AA03A005C2585 /* GAM Header Bidding Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "GAM Header Bidding Demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5AFED866266AA03A005C2585 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5AFED868266AA03A005C2585 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		5AFED86A266AA03A005C2585 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		5AFED86D266AA03A005C2585 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		5AFED86F266AA03E005C2585 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5AFED872266AA03E005C2585 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5AFED874266AA03E005C2585 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		5AFED87A266AAEE4005C2585 /* Banner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Banner.swift; sourceTree = "<group>"; };
+		5AFED87C266AAEF2005C2585 /* MRect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRect.swift; sourceTree = "<group>"; };
+		5AFED87E266AAF07005C2585 /* Interstitial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Interstitial.swift; sourceTree = "<group>"; };
+		5AFED881266ABDE1005C2585 /* GAMHeaderBidding.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = GAMHeaderBidding.storyboard; sourceTree = "<group>"; };
 		712C2FC2655583BD1128DFA2 /* Pods-GAM Header Bidding Demo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GAM Header Bidding Demo.release.xcconfig"; path = "Target Support Files/Pods-GAM Header Bidding Demo/Pods-GAM Header Bidding Demo.release.xcconfig"; sourceTree = "<group>"; };
 		8ABEA3CDD00D46E181FBE836 /* Pods-GAM Header Bidding Demo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GAM Header Bidding Demo.debug.xcconfig"; path = "Target Support Files/Pods-GAM Header Bidding Demo/Pods-GAM Header Bidding Demo.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -65,13 +71,32 @@
 			children = (
 				5AFED866266AA03A005C2585 /* AppDelegate.swift */,
 				5AFED868266AA03A005C2585 /* SceneDelegate.swift */,
-				5AFED86A266AA03A005C2585 /* ViewController.swift */,
-				5AFED86C266AA03A005C2585 /* Main.storyboard */,
+				5AFED880266ABDAA005C2585 /* Examples */,
+				5AFED883266ABDE7005C2585 /* Storyboards */,
 				5AFED86F266AA03E005C2585 /* Assets.xcassets */,
 				5AFED871266AA03E005C2585 /* LaunchScreen.storyboard */,
 				5AFED874266AA03E005C2585 /* Info.plist */,
 			);
 			path = "GAM Header Bidding Demo";
+			sourceTree = "<group>";
+		};
+		5AFED880266ABDAA005C2585 /* Examples */ = {
+			isa = PBXGroup;
+			children = (
+				5AFED87A266AAEE4005C2585 /* Banner.swift */,
+				5AFED87C266AAEF2005C2585 /* MRect.swift */,
+				5AFED87E266AAF07005C2585 /* Interstitial.swift */,
+			);
+			path = Examples;
+			sourceTree = "<group>";
+		};
+		5AFED883266ABDE7005C2585 /* Storyboards */ = {
+			isa = PBXGroup;
+			children = (
+				5AFED86C266AA03A005C2585 /* Main.storyboard */,
+				5AFED881266ABDE1005C2585 /* GAMHeaderBidding.storyboard */,
+			);
+			path = Storyboards;
 			sourceTree = "<group>";
 		};
 		812BA129E96D5B6BA113A5A2 /* Pods */ = {
@@ -80,7 +105,6 @@
 				8ABEA3CDD00D46E181FBE836 /* Pods-GAM Header Bidding Demo.debug.xcconfig */,
 				712C2FC2655583BD1128DFA2 /* Pods-GAM Header Bidding Demo.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -152,6 +176,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5AFED873266AA03E005C2585 /* LaunchScreen.storyboard in Resources */,
+				5AFED882266ABDE1005C2585 /* GAMHeaderBidding.storyboard in Resources */,
 				5AFED870266AA03E005C2585 /* Assets.xcassets in Resources */,
 				5AFED86E266AA03A005C2585 /* Main.storyboard in Resources */,
 			);
@@ -206,9 +231,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5AFED86B266AA03A005C2585 /* ViewController.swift in Sources */,
 				5AFED867266AA03A005C2585 /* AppDelegate.swift in Sources */,
+				5AFED87F266AAF07005C2585 /* Interstitial.swift in Sources */,
+				5AFED87D266AAEF2005C2585 /* MRect.swift in Sources */,
 				5AFED869266AA03A005C2585 /* SceneDelegate.swift in Sources */,
+				5AFED87B266AAEE4005C2585 /* Banner.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
