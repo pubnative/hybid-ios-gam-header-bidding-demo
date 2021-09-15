@@ -13,11 +13,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
 // Step 3: Setup & Initialize HyBid SDK
-        HyBid.initWithAppToken(appToken) { success in
-                    if (success) {
-                        print("HyBid iOS SDK successfully initialized!")
-                    }
-                }
+        HyBid.initWithAppToken(appToken, completion: nil)
 // Step 4: Setup & Initialize GoogleMobileAds SDK
         GADMobileAds.sharedInstance().start(completionHandler: nil)
 // Step 5: Set COPPA (Optional)
