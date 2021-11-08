@@ -49,7 +49,7 @@
             [self invokeFailWithMessage:@"The provided app token doesn't match the one used to initialise HyBid."];
             return;
         }
-
+        
     } else {
         [self invokeFailWithMessage:@"Failed interstitial ad fetch. Missing required server extras."];
         return;
@@ -82,6 +82,7 @@
 
 - (void)interstitialDidTrackClick {
     [self.delegate customEventInterstitialWasClicked:self];
+    [self.delegate customEventInterstitialWillLeaveApplication:self];
 }
 
 - (void)interstitialDidTrackImpression {

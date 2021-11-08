@@ -22,15 +22,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         HyBid.setTestMode(true)
 // Step 7: Set Location Tracking (Optional)
         HyBid.setLocationTracking(true)
-// Step 8: Set Interstitial skipOffet (Optional)
-        HyBid.setInterstitialSkipOffset(2)
-// Step 9: Set Targetting (Optional)
+// Step 8: Set HTML Interstitial skipOffset (Optional)
+        HyBid.setHTMLInterstitialSkipOffset(2)
+// Step 9: Set Video Interstitial skipOffset (Optional)
+        HyBid.setVideoInterstitialSkipOffset(5)
+// Step 10: Set Custom Click Behavior (Optional)
+        HyBid.setInterstitialActionBehaviour(HB_CREATIVE)
+// Step 11: Set Targeting (Optional)
         let targeting = HyBidTargetingModel()
         targeting.age = 28
         targeting.interests = ["music"]
         targeting.gender = "f"     // "f" for female, "m" for male
         HyBid.setTargeting(targeting)
-// Step 10: Set HyBid log level (Optional)
+// Step 12: Set HyBid log level (Optional)
         HyBidLogger.setLogLevel(HyBidLogLevelDebug)
         
         return true

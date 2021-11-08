@@ -60,7 +60,7 @@
         } else {
             [self.adPresenter load];
         }
-
+        
     } else {
         [self invokeFailWithMessage:@"Failed banner ad fetch. Missing required server extras."];
         return;
@@ -85,6 +85,7 @@
 
 - (void)adPresenterDidClick:(HyBidAdPresenter *)adPresenter {
     [self.delegate customEventBannerWasClicked:self];
+    [self.delegate customEventBannerWillLeaveApplication:self];
 }
 
 @end
