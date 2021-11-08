@@ -19,7 +19,7 @@ class Banner: UIViewController {
         super.viewDidLoad()
         navigationItem.title = "GAM Header Bidding Banner"
 // Step 3: Initialize the GAMBannerView property
-        bannerView = GAMBannerView(adSize: kGADAdSizeBanner)
+        bannerView = GAMBannerView(adSize: GADAdSizeBanner)
         bannerView.adUnitID = adUnitID
         bannerView.rootViewController = self
 // Step 4: Set GADBannerViewDelegate delegate

@@ -19,7 +19,7 @@ class MRect: UIViewController {
         super.viewDidLoad()
         navigationItem.title = "GAM Header Bidding MRect"
 // Step 3: Initialize the GAMBannerView property
-        mRectView = GAMBannerView(adSize: kGADAdSizeMediumRectangle)
+        mRectView = GAMBannerView(adSize: GADAdSizeMediumRectangle)
         mRectView.adUnitID = adUnitID
         mRectView.rootViewController = self
 // Step 4: Set GADBannerViewDelegate delegate
