@@ -105,5 +105,5 @@ install_xcframework() {
   echo "Copied $source to $destination"
 }
 
-install_xcframework "${PODS_ROOT}/HyBid/PubnativeLite/PubnativeLite/OMSDK-1.3.26/OMSDK_Pubnativenet.xcframework" "HyBid/Core" "framework" "ios-arm64_i386_x86_64-simulator" "ios-arm64_armv7"
+install_xcframework "${PODS_ROOT}/HyBid/PubnativeLite/PubnativeLite/OMSDK-1.3.29/OMSDK_Pubnativenet.xcframework" "HyBid/Core" "framework" "ios-arm64_armv7" "ios-arm64_i386_x86_64-simulator"
 
