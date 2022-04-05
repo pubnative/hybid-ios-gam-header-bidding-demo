@@ -17,29 +17,29 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
-    // Step 3: Setup & Initialize HyBid SDK
+// Step 3: Setup & Initialize HyBid SDK
     [HyBid initWithAppToken:APP_TOKEN completion:nil];
-    // Step 4: Setup & Initialize GoogleMobileAds SDK
+// Step 4: Setup & Initialize GoogleMobileAds SDK
     [[GADMobileAds sharedInstance] startWithCompletionHandler:nil];
-    // Step 5: Set COPPA (Optional)
+// Step 5: Set COPPA (Optional)
     [HyBid setCoppa:NO];
-    // Step 6: Set Test Mode (Optional)
+// Step 6: Set Test Mode (Optional)
     [HyBid setTestMode:YES];
-    // Step 7: Set Location Tracking (Optional)
+// Step 7: Set Location Tracking (Optional)
     [HyBid setLocationTracking:YES];
-    // Step 8: Set HTML Interstitial skipOffset (Optional)
+// Step 8: Set HTML Interstitial skipOffset (Optional)
     [HyBid setHTMLInterstitialSkipOffset:2];
-    // Step 9: Set Video Interstitial skipOffset (Optional)
+// Step 9: Set Video Interstitial skipOffset (Optional)
     [HyBid setVideoInterstitialSkipOffset:5];
-    // Step 10: Set Custom Click Behavior (Optional)
+// Step 10: Set Custom Click Behavior (Optional)
     [HyBid setInterstitialActionBehaviour:HB_CREATIVE];
-    // Step 11: Set Targeting (Optional)
+// Step 11: Set Targeting (Optional)
     HyBidTargetingModel *targeting = [[HyBidTargetingModel alloc] init];
     targeting.age = [NSNumber numberWithInt:28];
     targeting.interests = @[@"music"];
     targeting.gender = @"f";     // "f" for female, "m" for male
     [HyBid setTargeting:targeting];
-    // Step 12: Set HyBid log level (Optional)
+// Step 12: Set HyBid log level (Optional)
     [HyBidLogger setLogLevel:HyBidLogLevelDebug];
     
     return YES;
