@@ -1,0 +1,6 @@
+framework module Pods_GAM_Header_Bidding_Demo___ObjC {
+  umbrella header "Pods-GAM Header Bidding Demo - ObjC-umbrella.h"
+
+  export *
+  module * { export * }
+}
