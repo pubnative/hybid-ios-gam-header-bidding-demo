@@ -52,7 +52,8 @@
 // Step 9: Implement the GADFullScreenContentDelegate methods
 #pragma mark GADFullScreenContentDelegate
 
-- (void)adDidPresentFullScreenContent:(id)ad {
+- (void)adWillPresentFullScreenContent:(id<GADFullScreenPresentingAd>)ad {
+    
 }
 
 - (void)ad:(id)ad didFailToPresentFullScreenContentWithError:(NSError *)error {

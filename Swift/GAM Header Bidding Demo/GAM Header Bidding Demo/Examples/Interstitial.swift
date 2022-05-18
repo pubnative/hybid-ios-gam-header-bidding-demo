@@ -44,7 +44,8 @@ class Interstitial: UIViewController {
 
 // Step 9: Implement the GADFullScreenContentDelegate methods
 extension Interstitial : GADFullScreenContentDelegate {
-    func adDidPresentFullScreenContent(_ ad: GADFullScreenPresentingAd) {
+    func adWillPresentFullScreenContent(_ ad: GADFullScreenPresentingAd) {
+        
     }
     
     func ad(_ ad: GADFullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
