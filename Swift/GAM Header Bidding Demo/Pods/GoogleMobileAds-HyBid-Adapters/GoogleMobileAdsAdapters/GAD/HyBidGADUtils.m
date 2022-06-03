@@ -63,7 +63,7 @@ NSString *const HyBidGADAdapterKeyAppToken = @"pn_app_token";
     GADVersionNumber version = {0};
     version.majorVersion = 2;
     version.minorVersion = 13;
-    version.patchVersion = 0;
+    version.patchVersion = 1;
     return version;
 }
 
@@ -71,7 +71,7 @@ NSString *const HyBidGADAdapterKeyAppToken = @"pn_app_token";
     GADVersionNumber version = {0};
     version.majorVersion = 2;
     version.minorVersion = 13;
-    version.patchVersion = 0;
+    version.patchVersion = 1;
     return version;
 }
 
