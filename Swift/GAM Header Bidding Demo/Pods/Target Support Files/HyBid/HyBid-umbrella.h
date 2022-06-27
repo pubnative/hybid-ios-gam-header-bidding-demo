@@ -152,7 +152,7 @@
 #import "HyBidXMLDictionary.h"
 #import "HyBidMarkupUtils.h"
 #import "HyBidVASTEndCardCloseIcon.h"
-#import "HyBidVASTEndCardViewController.h"
+#import "HyBidVASTEndCardView.h"
 #import "HyBidVASTMediaFilePicker.h"
 #import "HyBidVASTParser.h"
 #import "HyBidVASTSchema.h"
