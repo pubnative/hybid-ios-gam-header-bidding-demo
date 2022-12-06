@@ -5,7 +5,7 @@ If you want to display HyBid Ads in your iOS application through Google Mobile A
 
 ## Requirements
 
-- ![Platform: iOS 9.0+](https://img.shields.io/badge/Platform-iOS%209.0%2B-blue.svg?style=flat)
+- ![Platform: iOS 10.0+](https://img.shields.io/badge/Platform-iOS%2010.0%2B-blue.svg?style=flat)
 - ![Xcode: 12.0+](https://img.shields.io/badge/Xcode-12.0+-blue.svg?style=flat)
 
 ## Features
@@ -24,7 +24,7 @@ It will install HyBid Adapters, as well as HyBid iOS SDK and Google Mobile Ads i
 
 ```ruby
 platform :ios, '10.0'
-pod 'GoogleMobileAds-HyBid-Adapters', '2.16.0.0'
+pod 'GoogleMobileAds-HyBid-Adapters', '2.16.1.0'
 ```
 
 2. Run `pod install --repo-update` to install the pod in your project.
