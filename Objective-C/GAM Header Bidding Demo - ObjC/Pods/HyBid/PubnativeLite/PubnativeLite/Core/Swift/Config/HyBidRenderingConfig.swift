@@ -61,6 +61,8 @@ public class HyBidRenderingConfig: NSObject {
     
     @available(*, deprecated, message: "You can safely remove this method from your integration.")
     @objc public var audioStatus: HyBidAudioStatus = HyBidAudioStatusMuted
+    
+    @available(*, deprecated, message: "You can safely remove this method from your integration.")
     @objc public var mraidExpand: Bool = true
     
     @available(*, deprecated, message: "You can safely remove this method from your integration.")

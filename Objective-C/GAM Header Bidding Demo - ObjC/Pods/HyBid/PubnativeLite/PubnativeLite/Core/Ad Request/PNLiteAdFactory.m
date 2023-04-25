@@ -77,7 +77,11 @@
     self.adRequestModel.requestParameters[HyBidRequestParameter.orientation] = [HyBidSettings sharedInstance].orientation;
     self.adRequestModel.requestParameters[HyBidRequestParameter.coppa] = [HyBidConsentConfig sharedConfig].coppa ? @"1" : @"0";
     [self setIDFA:self.adRequestModel];
-    self.adRequestModel.requestParameters[HyBidRequestParameter.locale] = [HyBidSettings sharedInstance].locale;
+    
+    NSString *locale = [HyBidSettings sharedInstance].locale;
+    if (locale && [locale length] != 0){
+        self.adRequestModel.requestParameters[HyBidRequestParameter.locale] = locale;
+    }
     
     BOOL isUsingOpenRTB = [[NSUserDefaults standardUserDefaults] boolForKey:kIsUsingOpenRTB];
     if (isUsingOpenRTB) {
@@ -173,18 +177,15 @@
     }
 
     #if __has_include(<ATOM/ATOM-Swift.h>)
-    NSArray *cohortsArray = [Atom getCohorts];
-    NSString *cohortsString = [cohortsArray componentsJoinedByString:@","];
-    cohortsString = [[NSString alloc] initWithFormat:@"[%@]", cohortsString];
+    SEL vgParameterBase64StringSelector = NSSelectorFromString(@"vgParameterBase64String");
     
-    NSString *encryptedString = [[cohortsString dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0];
-    NSString *lastChar = [encryptedString substringFromIndex:[encryptedString length] - 1];
-    
-    if ([lastChar isEqualToString:@"="]) {
-        encryptedString = [encryptedString substringToIndex:[encryptedString length] - 1];
+    if ([Atom respondsToSelector: vgParameterBase64StringSelector]) {
+        NSString *vgParameter = [Atom performSelector:vgParameterBase64StringSelector];
+        
+        if (vgParameter != nil) {
+            self.adRequestModel.requestParameters[HyBidRequestParameter.vg] = vgParameter;
+        }
     }
-    
-    self.adRequestModel.requestParameters[HyBidRequestParameter.vg] = encryptedString;
     #endif
     
     [self setDefaultMetaFields:self.adRequestModel];

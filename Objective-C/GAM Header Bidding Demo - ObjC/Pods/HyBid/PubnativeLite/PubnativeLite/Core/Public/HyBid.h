@@ -202,7 +202,7 @@ typedef void (^HyBidCompletionBlock)(BOOL);
 + (NSString*)getSDKVersionInfo;
 + (NSString*)getCustomRequestSignalData;
 + (NSString*)getCustomRequestSignalData:(NSString*) mediationVendorName;
-+ (void)setMRAIDExpand:(BOOL)enabled;
++ (void)setMRAIDExpand:(BOOL)enabled DEPRECATED_MSG_ATTRIBUTE("You can safely remove this method from your integration.");
 + (void)setInterstitialSKOverlay:(BOOL)enabled DEPRECATED_MSG_ATTRIBUTE("You can safely remove this method from your integration.");
 + (void)setRewardedSKOverlay:(BOOL)enabled DEPRECATED_MSG_ATTRIBUTE("You can safely remove this method from your integration.");
 

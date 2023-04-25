@@ -48,6 +48,11 @@ typedef struct {
 @property (nonatomic, readonly) NSString *impressionID;
 @property (nonatomic, readonly) NSString *creativeID;
 @property (nonatomic, readonly) NSString *zoneID;
+
+#if __has_include(<ATOM/ATOM-Swift.h>)
+@property (nonatomic, readonly) NSArray<NSString *> *cohorts;
+#endif
+
 @property (nonatomic, readonly) NSNumber *assetGroupID;
 @property (nonatomic, readonly) NSNumber *openRTBAssetGroupID;
 @property (nonatomic, readonly) NSNumber *eCPM;
@@ -64,20 +69,30 @@ typedef struct {
 @property (nonatomic, readonly) NSString *contentInfoIconClickAction;
 @property (nonatomic, readonly) NSString *contentInfoDisplay;
 @property (nonatomic, readonly) NSString *contentInfoText;
-@property (nonatomic, readonly) NSNumber *htmlSkipOffset;
+@property (nonatomic, readonly) NSString *contentInfoHorizontalPosition;
+@property (nonatomic, readonly) NSString *contentInfoVeritcalPosition;
+@property (nonatomic, readonly) NSNumber *interstitialHtmlSkipOffset;
+@property (nonatomic, readonly) NSNumber *rewardedHtmlSkipOffset;
 @property (nonatomic, readonly) NSNumber *videoSkipOffset;
 @property (nonatomic, readonly) NSNumber *endcardCloseDelay;
 @property (nonatomic, readonly) NSNumber *minVisibleTime;
 @property (nonatomic, readonly) NSNumber *minVisiblePercent;
 @property (nonatomic, readonly) NSString *impressionTrackingMethod;
-// The following 5 properties are created as NSNumber instead of BOOL beacuse it'll be important whether they have a value or not when we'll decide which setting to use.
+// The following 6 properties are created as NSNumber instead of BOOL beacuse it'll be important whether they have a value or not when we'll decide which setting to use.
 @property (nonatomic, readonly) NSNumber *endcardEnabled;
 @property (nonatomic, readonly) NSNumber *skoverlayEnabled;
 @property (nonatomic, readonly) NSNumber *closeInterstitialAfterFinish;
 @property (nonatomic, readonly) NSNumber *closeRewardedAfterFinish;
 @property (nonatomic, readonly) NSNumber *fullscreenClickability;
+@property (nonatomic, readonly) NSNumber *mraidExpand;
 
 - (instancetype)initWithData:(HyBidAdModel *)data withZoneID:(NSString *)zoneID;
+
+#if __has_include(<ATOM/ATOM-Swift.h>)
+- (instancetype)initWithData:(HyBidAdModel *)data withZoneID:(NSString *)zoneID withCohorts:(NSArray<NSString *> *)cohorts;
+- (instancetype)initOpenRTBWithData:(HyBidAdModel *)data withZoneID:(NSString *)zoneID withCohorts:(NSArray<NSString *> *)cohorts;
+#endif
+
 - (instancetype)initOpenRTBWithData:(HyBidAdModel *)data withZoneID:(NSString *)zoneID;
 - (instancetype)initWithAssetGroup:(NSInteger)assetGroup withAdContent:(NSString *)adContent withAdType:(NSInteger)adType;
 - (instancetype)initWithAssetGroupForOpenRTB:(NSInteger)assetGroup withAdContent:(NSString *)adContent withAdType:(NSInteger)adType withBidObject:(NSDictionary *)bidObject;

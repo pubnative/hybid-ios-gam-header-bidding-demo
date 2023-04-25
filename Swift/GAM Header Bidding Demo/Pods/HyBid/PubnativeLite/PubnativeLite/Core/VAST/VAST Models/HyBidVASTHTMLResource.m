@@ -46,13 +46,7 @@
 
 - (NSString *)content
 {
-    NSString *html = [[NSAttributedString alloc] initWithData:[[self.htmlResourceXMLElement value] dataUsingEncoding:NSUnicodeStringEncoding] options:@{NSDocumentTypeDocumentOption: NSHTMLTextDocumentType} documentAttributes:nil error:nil].string;
-    
-    if ([html length] > 0 && ![html isEqualToString:@"\n"]) {
-        return html;
-    } else {
-        return [self.htmlResourceXMLElement value];
-    }
+    return [self.htmlResourceXMLElement value];
 }
 
 @end

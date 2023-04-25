@@ -49,6 +49,10 @@ NSString *const ContentInfoViewIcon = @"https://cdn.pubnative.net/static/adserve
 @property (nonatomic, strong)HyBidContentInfoView *contentInfoView;
 @property (nonatomic, strong)NSString *_zoneID;
 
+#if __has_include(<ATOM/ATOM-Swift.h>)
+@property (nonatomic, strong)NSArray<NSString *> *_cohorts;
+#endif
+
 @end
 
 @implementation HyBidAd
@@ -57,6 +61,10 @@ NSString *const ContentInfoViewIcon = @"https://cdn.pubnative.net/static/adserve
     self.data = nil;
     self.contentInfoView = nil;
     self._zoneID = nil;
+    
+    #if __has_include(<ATOM/ATOM-Swift.h>)
+    self._cohorts = nil;
+    #endif
 }
 
 #pragma mark HyBidAd
@@ -69,6 +77,30 @@ NSString *const ContentInfoViewIcon = @"https://cdn.pubnative.net/static/adserve
     }
     return self;
 }
+
+
+#if __has_include(<ATOM/ATOM-Swift.h>)
+- (instancetype)initWithData:(HyBidAdModel *)data withZoneID:(NSString *)zoneID withCohorts:(NSArray<NSString *> *)cohorts
+{
+    self = [super init];
+    if (self) {
+        self.data = data;
+        self._zoneID = zoneID;
+        self._cohorts = cohorts;
+    }
+    return self;
+}
+
+- (instancetype)initOpenRTBWithData:(HyBidOpenRTBAdModel *)data withZoneID:(NSString *)zoneID withCohorts:(NSArray<NSString *> *)cohorts {
+    self = [super init];
+    if (self) {
+        self.openRTBData = data;
+        self._zoneID = zoneID;
+        self._cohorts = cohorts;
+    }
+    return self;
+}
+#endif
 
 - (instancetype)initOpenRTBWithData:(HyBidOpenRTBAdModel *)data withZoneID:(NSString *)zoneID {
     self = [super init];
@@ -132,6 +164,13 @@ NSString *const ContentInfoViewIcon = @"https://cdn.pubnative.net/static/adserve
 - (NSString *)zoneID {
     return self._zoneID;
 }
+
+#if __has_include(<ATOM/ATOM-Swift.h>)
+- (NSArray<NSString *> *)cohorts
+{
+    return self._cohorts;
+}
+#endif
 
 - (NSString *)vast {
     NSString *result = nil;
@@ -349,6 +388,28 @@ NSString *const ContentInfoViewIcon = @"https://cdn.pubnative.net/static/adserve
     return result;
 }
 
+- (NSString *)contentInfoHorizontalPosition {
+    NSString *result = nil;
+    NSDictionary *jsonDictionary = [self jsonData];
+    if (jsonDictionary) {
+        if ([jsonDictionary objectForKey:PNLiteData.contentInfoHorizontalPosition] != (id)[NSNull null]) {
+            result = [jsonDictionary objectForKey:PNLiteData.contentInfoHorizontalPosition];
+        }
+    }
+    return result;
+}
+
+- (NSString *)contentInfoVeritcalPosition {
+    NSString *result = nil;
+    NSDictionary *jsonDictionary = [self jsonData];
+    if (jsonDictionary) {
+        if ([jsonDictionary objectForKey:PNLiteData.contentInfoVerticalPosition] != (id)[NSNull null]) {
+            result = [jsonDictionary objectForKey:PNLiteData.contentInfoVerticalPosition];
+        }
+    }
+    return result;
+}
+
 - (NSNumber *)endcardEnabled {
     NSNumber *result = nil;
     NSDictionary *jsonDictionary = [self jsonData];
@@ -371,12 +432,23 @@ NSString *const ContentInfoViewIcon = @"https://cdn.pubnative.net/static/adserve
     return result;
 }
 
-- (NSNumber *)htmlSkipOffset {
+- (NSNumber *)interstitialHtmlSkipOffset {
     NSNumber *result = nil;
     NSDictionary *jsonDictionary = [self jsonData];
     if (jsonDictionary) {
-        if ([jsonDictionary objectForKey:PNLiteData.htmlSkipOffset] != (id)[NSNull null]) {
-            result = [jsonDictionary objectForKey:PNLiteData.htmlSkipOffset];
+        if ([jsonDictionary objectForKey:PNLiteData.interstitialHtmlSkipOffset] != (id)[NSNull null]) {
+            result = [jsonDictionary objectForKey:PNLiteData.interstitialHtmlSkipOffset];
+        }
+    }
+    return result;
+}
+
+- (NSNumber *)rewardedHtmlSkipOffset {
+    NSNumber *result = nil;
+    NSDictionary *jsonDictionary = [self jsonData];
+    if (jsonDictionary) {
+        if ([jsonDictionary objectForKey:PNLiteData.rewardedHtmlSkipOffset] != (id)[NSNull null]) {
+            result = [jsonDictionary objectForKey:PNLiteData.rewardedHtmlSkipOffset];
         }
     }
     return result;
@@ -421,6 +493,17 @@ NSString *const ContentInfoViewIcon = @"https://cdn.pubnative.net/static/adserve
     if (jsonDictionary) {
         if ([jsonDictionary objectForKey:PNLiteData.fullscreenClickability] != (id)[NSNull null]) {
             result = [jsonDictionary objectForKey:PNLiteData.fullscreenClickability];
+        }
+    }
+    return result;
+}
+
+-(NSNumber *)mraidExpand {
+    NSNumber *result = nil;
+    NSDictionary *jsonDictionary = [self jsonData];
+    if (jsonDictionary) {
+        if ([jsonDictionary objectForKey:PNLiteData.mraidExpand] != (id)[NSNull null]) {
+            result = [jsonDictionary objectForKey:PNLiteData.mraidExpand];
         }
     }
     return result;
@@ -475,6 +558,8 @@ NSString *const ContentInfoViewIcon = @"https://cdn.pubnative.net/static/adserve
     self.contentInfoView.icon = [self determineContentInfoIconURL];
     self.contentInfoView.clickAction = [self determineContentInfoIconClickAction];
     self.contentInfoView.display = [self determineContentInfoDisplay];
+    self.contentInfoView.horizontalPosition = [self determineContentInfoHorizontalPosition];
+    self.contentInfoView.verticalPosition = [self determineContentInfoVerticalPosition];
     self.contentInfoView.zoneID = self.zoneID;
     return self.contentInfoView;
 }
@@ -507,7 +592,7 @@ NSString *const ContentInfoViewIcon = @"https://cdn.pubnative.net/static/adserve
 }
 
 - (NSString *)determineContentInfoURL {
-    if (self.contentInfoURL) {
+    if (self.contentInfoURL && [self.contentInfoURL isKindOfClass:[NSString class]]) {
         return self.contentInfoURL;
     } else if ([self metaDataWithType:PNLiteMeta.contentInfo] && [[self metaDataWithType:PNLiteMeta.contentInfo] stringFieldWithKey:@"link"]) {
         return [[self metaDataWithType:PNLiteMeta.contentInfo] stringFieldWithKey:@"link"];
@@ -517,7 +602,7 @@ NSString *const ContentInfoViewIcon = @"https://cdn.pubnative.net/static/adserve
 }
 
 - (NSString *)determineContentInfoIconURL {
-    if (self.contentInfoIconURL) {
+    if (self.contentInfoIconURL && [self.contentInfoIconURL isKindOfClass:[NSString class]]) {
         return self.contentInfoIconURL;
     } else if ([self metaDataWithType:PNLiteMeta.contentInfo] && [[self metaDataWithType:PNLiteMeta.contentInfo] stringFieldWithKey:@"icon"]) {
         return [[self metaDataWithType:PNLiteMeta.contentInfo] stringFieldWithKey:@"icon"];
@@ -527,7 +612,7 @@ NSString *const ContentInfoViewIcon = @"https://cdn.pubnative.net/static/adserve
 }
 
 - (HyBidContentInfoClickAction)determineContentInfoIconClickAction {
-    if (self.contentInfoIconClickAction) {
+    if (self.contentInfoIconClickAction && [self.contentInfoIconClickAction isKindOfClass:[NSString class]]) {
         if ([self.contentInfoIconClickAction isEqualToString:@"open"]) {
             return HyBidContentInfoClickActionOpen;
         } else {
@@ -539,8 +624,8 @@ NSString *const ContentInfoViewIcon = @"https://cdn.pubnative.net/static/adserve
 }
 
 - (HyBidContentInfoDisplay)determineContentInfoDisplay {
-    if (self.contentInfoDisplay) {
-        if ([self.contentInfoDisplay isEqualToString:@"inapp"]) {
+    if (self.contentInfoDisplay && [self.contentInfoDisplay isKindOfClass:[NSString class]]) {
+        if ( [self.contentInfoDisplay isEqualToString:@"inapp"]) {
             return HyBidContentInfoDisplayInApp;
         } else {
             return HyBidContentInfoDisplaySystem;
@@ -551,12 +636,40 @@ NSString *const ContentInfoViewIcon = @"https://cdn.pubnative.net/static/adserve
 }
 
 - (NSString *)determineContentInfoText {
-    if (self.contentInfoText) {
+    if (self.contentInfoText && [self.contentInfoText isKindOfClass:[NSString class]]) {
         return self.contentInfoText;
     } else if ([self metaDataWithType:PNLiteMeta.contentInfo] && [self metaDataWithType:PNLiteMeta.contentInfo].text) {
         return [self metaDataWithType:PNLiteMeta.contentInfo].text;
     } else {
         return ContentInfoViewText;
+    }
+}
+
+- (HyBidContentInfoHorizontalPosition)determineContentInfoHorizontalPosition {
+    if (self.contentInfoHorizontalPosition && [self.contentInfoHorizontalPosition isKindOfClass:[NSString class]]) {
+        if ([self.contentInfoHorizontalPosition isEqualToString:@"left"]) {
+            return HyBidContentInfoHorizontalPositionLeft;
+        } else if ([self.contentInfoHorizontalPosition isEqualToString:@"right"]) {
+            return HyBidContentInfoHorizontalPositionRight;
+        } else {
+            return HyBidContentInfoHorizontalPositionLeft;
+        }
+    } else {
+        return HyBidContentInfoHorizontalPositionLeft;
+    }
+}
+
+- (HyBidContentInfoVerticalPosition)determineContentInfoVerticalPosition {
+    if (self.contentInfoVeritcalPosition && [self.contentInfoVeritcalPosition isKindOfClass:[NSString class]]) {
+        if ([self.contentInfoVeritcalPosition isEqualToString:@"top"]) {
+            return HyBidContentInfoVerticalPositionTop;
+        } else if ([self.contentInfoVeritcalPosition isEqualToString:@"bottom"]) {
+            return HyBidContentInfoVerticalPositionBottom;
+        } else {
+            return HyBidContentInfoVerticalPositionTop;
+        }
+    } else {
+        return HyBidContentInfoVerticalPositionTop;
     }
 }
 
