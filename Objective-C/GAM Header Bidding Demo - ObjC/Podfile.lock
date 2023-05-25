@@ -2,29 +2,29 @@ PODS:
   - Google-Mobile-Ads-SDK (9.14.0):
     - GoogleAppMeasurement (< 11.0, >= 7.0)
     - GoogleUserMessagingPlatform (>= 1.1)
-  - GoogleAppMeasurement (10.8.0):
-    - GoogleAppMeasurement/AdIdSupport (= 10.8.0)
-    - GoogleUtilities/AppDelegateSwizzler (~> 7.8)
-    - GoogleUtilities/MethodSwizzler (~> 7.8)
-    - GoogleUtilities/Network (~> 7.8)
-    - "GoogleUtilities/NSData+zlib (~> 7.8)"
+  - GoogleAppMeasurement (10.10.0):
+    - GoogleAppMeasurement/AdIdSupport (= 10.10.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.11)
+    - GoogleUtilities/MethodSwizzler (~> 7.11)
+    - GoogleUtilities/Network (~> 7.11)
+    - "GoogleUtilities/NSData+zlib (~> 7.11)"
     - nanopb (< 2.30910.0, >= 2.30908.0)
-  - GoogleAppMeasurement/AdIdSupport (10.8.0):
-    - GoogleAppMeasurement/WithoutAdIdSupport (= 10.8.0)
-    - GoogleUtilities/AppDelegateSwizzler (~> 7.8)
-    - GoogleUtilities/MethodSwizzler (~> 7.8)
-    - GoogleUtilities/Network (~> 7.8)
-    - "GoogleUtilities/NSData+zlib (~> 7.8)"
+  - GoogleAppMeasurement/AdIdSupport (10.10.0):
+    - GoogleAppMeasurement/WithoutAdIdSupport (= 10.10.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.11)
+    - GoogleUtilities/MethodSwizzler (~> 7.11)
+    - GoogleUtilities/Network (~> 7.11)
+    - "GoogleUtilities/NSData+zlib (~> 7.11)"
     - nanopb (< 2.30910.0, >= 2.30908.0)
-  - GoogleAppMeasurement/WithoutAdIdSupport (10.8.0):
-    - GoogleUtilities/AppDelegateSwizzler (~> 7.8)
-    - GoogleUtilities/MethodSwizzler (~> 7.8)
-    - GoogleUtilities/Network (~> 7.8)
-    - "GoogleUtilities/NSData+zlib (~> 7.8)"
+  - GoogleAppMeasurement/WithoutAdIdSupport (10.10.0):
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.11)
+    - GoogleUtilities/MethodSwizzler (~> 7.11)
+    - GoogleUtilities/Network (~> 7.11)
+    - "GoogleUtilities/NSData+zlib (~> 7.11)"
     - nanopb (< 2.30910.0, >= 2.30908.0)
-  - GoogleMobileAds-HyBid-Adapters (2.18.1-beta7.0):
+  - GoogleMobileAds-HyBid-Adapters (2.19.0-beta.0):
     - Google-Mobile-Ads-SDK (~> 9.0)
-    - HyBid (= 2.18.1-beta7)
+    - HyBid (= 2.19.0-beta)
   - GoogleUserMessagingPlatform (2.0.1)
   - GoogleUtilities/AppDelegateSwizzler (7.11.1):
     - GoogleUtilities/Environment
@@ -43,20 +43,20 @@ PODS:
   - "GoogleUtilities/NSData+zlib (7.11.1)"
   - GoogleUtilities/Reachability (7.11.1):
     - GoogleUtilities/Logger
-  - HyBid (2.18.1-beta7):
-    - HyBid/Banner (= 2.18.1-beta7)
-    - HyBid/Core (= 2.18.1-beta7)
-    - HyBid/FullScreen (= 2.18.1-beta7)
-    - HyBid/Native (= 2.18.1-beta7)
-    - HyBid/RewardedVideo (= 2.18.1-beta7)
-  - HyBid/Banner (2.18.1-beta7):
+  - HyBid (2.19.0-beta):
+    - HyBid/Banner (= 2.19.0-beta)
+    - HyBid/Core (= 2.19.0-beta)
+    - HyBid/FullScreen (= 2.19.0-beta)
+    - HyBid/Native (= 2.19.0-beta)
+    - HyBid/RewardedVideo (= 2.19.0-beta)
+  - HyBid/Banner (2.19.0-beta):
     - HyBid/Core
-  - HyBid/Core (2.18.1-beta7)
-  - HyBid/FullScreen (2.18.1-beta7):
+  - HyBid/Core (2.19.0-beta)
+  - HyBid/FullScreen (2.19.0-beta):
     - HyBid/Core
-  - HyBid/Native (2.18.1-beta7):
+  - HyBid/Native (2.19.0-beta):
     - HyBid/Core
-  - HyBid/RewardedVideo (2.18.1-beta7):
+  - HyBid/RewardedVideo (2.19.0-beta):
     - HyBid/Core
   - nanopb (2.30909.0):
     - nanopb/decode (= 2.30909.0)
@@ -66,7 +66,7 @@ PODS:
   - PromisesObjC (2.2.0)
 
 DEPENDENCIES:
-  - GoogleMobileAds-HyBid-Adapters (= 2.18.1-beta7.0)
+  - GoogleMobileAds-HyBid-Adapters (= 2.19.0-beta.0)
 
 SPEC REPOS:
   trunk:
@@ -81,14 +81,14 @@ SPEC REPOS:
 
 SPEC CHECKSUMS:
   Google-Mobile-Ads-SDK: 4fe6304b771f8467d29978cb790ec1e56e646946
-  GoogleAppMeasurement: 0ba93018e916f7badf915c2337d43cc1fa96b3f9
-  GoogleMobileAds-HyBid-Adapters: 09f776e3c794c3c768df79bbd6608b9e274959a8
+  GoogleAppMeasurement: bbbfd4bcb2b40ae9b772c3b0823a58c1e3d618f9
+  GoogleMobileAds-HyBid-Adapters: c4aee05631af31a5393669cc77ad53c212440ff3
   GoogleUserMessagingPlatform: 5f8b30daf181805317b6b985bb51c1ff3beca054
   GoogleUtilities: 9aa0ad5a7bc171f8bae016300bfcfa3fb8425749
-  HyBid: e1353abdc934c0216a929dd21a021e4b57e47974
+  HyBid: 49642f84127a7a0408ba86974869ca98c488e848
   nanopb: b552cce312b6c8484180ef47159bc0f65a1f0431
   PromisesObjC: 09985d6d70fbe7878040aa746d78236e6946d2ef
 
-PODFILE CHECKSUM: fe8e32f07d2ff7c3695da459f794bdb7eb5c0165
+PODFILE CHECKSUM: 6d6d86e222a35b9e0a7a65e44d4e0d6c31bc426d
 
 COCOAPODS: 1.11.3
