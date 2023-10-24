@@ -123,10 +123,14 @@ FOUNDATION_EXPORT const unsigned char HyBidVersionString[];
 #import "HyBidSignalDataProcessor.h"
 #import "HyBidAdImpression.h"
 #import "HyBidAdSourceConfig.h"
+#import "HyBidSkAdNetworkRequestModel.h"
+#import "HyBidSKAdNetworkParameter.h"
+#import "HyBidWebBrowserUserAgentInfo.h"
 
 // For swift compatibility, we are making this file public instead of private
 // Avoid using custom module map
 #import "PNLiteLocationManager.h"
+#import "PNLiteAdRequestModel.h"
 
 @class HyBidTargetingModel;
 @class HyBidReportingManager;
@@ -154,6 +158,14 @@ typedef enum{
     HyBidAdImpressionTrackerRender,
     HyBidAdImpressionTrackerViewable
 } HyBidImpressionTrackerMethod;
+
+typedef enum {
+    HyBidCustomEndcardDisplayExtention,
+    HyBidCustomEndcardDisplayFallback
+} HyBidCustomEndcardDisplayBehaviour;
+
+static NSString * const HyBidCustomEndcardDisplayExtentionValue = @"extension";
+static NSString * const HyBidCustomEndcardDisplayFallbackValue = @"fallback";
 
 #define kIsUsingOpenRTB @"isUsingOpenRTB"
 

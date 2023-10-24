@@ -107,6 +107,13 @@
 
 - (void)rewardedPresenterDidLoad:(HyBidRewardedPresenter *)rewardedPresenter {
     if (self.rewardedPresenterDelegate && [self.rewardedPresenterDelegate respondsToSelector:@selector(rewardedPresenterDidLoad:)]) {
+        if (self.rewardedPresenter.ad.skoverlayEnabled) {
+            if ([self.rewardedPresenter.ad.skoverlayEnabled boolValue]) {
+                self.skoverlay = [[HyBidSKOverlay alloc] initWithAd:rewardedPresenter.ad];
+            }
+        } else if ([HyBidRenderingConfig sharedConfig].rewardedSKOverlay) {
+            self.skoverlay = [[HyBidSKOverlay alloc] initWithAd:rewardedPresenter.ad];
+        }
         [self.rewardedPresenterDelegate rewardedPresenterDidLoad:rewardedPresenter];
         
         if(!self.impressionTracker) {
@@ -116,14 +123,6 @@
         
         if (self.impressionTracker.impressionTrackingMethod == HyBidAdImpressionTrackerRender) {
             [self.adTracker trackImpressionWithAdFormat:HyBidReportingAdFormat.REWARDED];
-        }
-        
-        if (self.rewardedPresenter.ad.skoverlayEnabled) {
-            if ([self.rewardedPresenter.ad.skoverlayEnabled boolValue]) {
-                self.skoverlay = [[HyBidSKOverlay alloc] initWithAd:rewardedPresenter.ad];
-            }
-        } else if ([HyBidRenderingConfig sharedConfig].rewardedSKOverlay) {
-            self.skoverlay = [[HyBidSKOverlay alloc] initWithAd:rewardedPresenter.ad];
         }
     }
 }
@@ -146,7 +145,7 @@
 - (void)rewardedPresenterDidDismiss:(HyBidRewardedPresenter *)rewardedPresenter {
     if (self.rewardedPresenterDelegate && [self.rewardedPresenterDelegate respondsToSelector:@selector(rewardedPresenterDidDismiss:)]) {
         [self.rewardedPresenterDelegate rewardedPresenterDidDismiss:rewardedPresenter];
-        [self.skoverlay dismissWithAd:rewardedPresenter.ad];
+        [self.skoverlay dismissEntirely:YES withAd:rewardedPresenter.ad causedByAutoCloseTimerCompletion:NO];
     }
 }
 
@@ -165,18 +164,20 @@
             [self.errorReportingProperties setObject:error.localizedDescription forKey:HyBidReportingCommon.ERROR_MESSAGE];
         }
         [self addCommonPropertiesToReportingDictionary:self.errorReportingProperties withRewardedPresenter:rewardedPresenter];
-        HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.ERROR adFormat:HyBidReportingAdFormat.REWARDED properties:self.errorReportingProperties];
-        [[HyBid reportingManager] reportEventFor:reportingEvent];
+        if(self.errorReportingProperties){
+            HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.ERROR adFormat:HyBidReportingAdFormat.REWARDED properties:self.errorReportingProperties];
+            [[HyBid reportingManager] reportEventFor:reportingEvent];
+        }
         [self.rewardedPresenterDelegate rewardedPresenter:rewardedPresenter didFailWithError:error];
     }
 }
 
 - (void)rewardedPresenterDidAppear:(HyBidRewardedPresenter *)rewardedPresenter {
-    
+    [self.skoverlay presentWithAd:rewardedPresenter.ad];
 }
 
 - (void)rewardedPresenterDidDisappear:(HyBidRewardedPresenter *)rewardedPresenter {
-    
+    [self.skoverlay dismissEntirely:NO withAd:rewardedPresenter.ad causedByAutoCloseTimerCompletion:NO];
 }
 
 - (void)rewardedPresenterPresentsSKOverlay:(HyBidRewardedPresenter *)rewardedPresenter {
@@ -184,7 +185,7 @@
 }
 
 - (void)rewardedPresenterDismissesSKOverlay:(HyBidRewardedPresenter *)rewardedPresenter {
-    [self.skoverlay dismissWithAd:rewardedPresenter.ad];
+    [self.skoverlay dismissEntirely:YES withAd:rewardedPresenter.ad causedByAutoCloseTimerCompletion:NO];
 }
 
 @end

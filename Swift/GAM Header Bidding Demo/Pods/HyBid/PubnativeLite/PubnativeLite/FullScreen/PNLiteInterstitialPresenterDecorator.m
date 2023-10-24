@@ -128,7 +128,6 @@
     }
     
     if (self.interstitialPresenterDelegate && [self.interstitialPresenterDelegate respondsToSelector:@selector(interstitialPresenterDidLoad:)]) {
-        [self.interstitialPresenterDelegate interstitialPresenterDidLoad:interstitialPresenter];
         if (self.interstitialPresenter.ad.skoverlayEnabled) {
             if ([self.interstitialPresenter.ad.skoverlayEnabled boolValue]) {
                 self.skoverlay = [[HyBidSKOverlay alloc] initWithAd:interstitialPresenter.ad];
@@ -136,6 +135,7 @@
         } else if ([HyBidRenderingConfig sharedConfig].interstitialSKOverlay) {
             self.skoverlay = [[HyBidSKOverlay alloc] initWithAd:interstitialPresenter.ad];
         }
+        [self.interstitialPresenterDelegate interstitialPresenterDidLoad:interstitialPresenter];
     }
 }
 
@@ -159,7 +159,7 @@
         HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.INTERSTITIAL_CLOSED adFormat:HyBidReportingAdFormat.FULLSCREEN properties:nil];
         [[HyBid reportingManager] reportEventFor:reportingEvent];
         [self.interstitialPresenterDelegate interstitialPresenterDidDismiss:interstitialPresenter];
-        [self.skoverlay dismissWithAd:interstitialPresenter.ad];
+        [self.skoverlay dismissEntirely:YES withAd:interstitialPresenter.ad causedByAutoCloseTimerCompletion:NO];
     }
 }
 
@@ -168,19 +168,21 @@
         if (error != nil && error.localizedDescription != nil && error.localizedDescription.length > 0) {
             [self.errorReportingProperties setObject:error.localizedDescription forKey:HyBidReportingCommon.ERROR_MESSAGE];
         }
-        [self addCommonPropertiesToReportingDictionary:self.errorReportingProperties withInterstitialPresenter:interstitialPresenter];
-        HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.ERROR adFormat:HyBidReportingAdFormat.FULLSCREEN properties:self.errorReportingProperties];
-        [[HyBid reportingManager] reportEventFor:reportingEvent];
+        if(self.errorReportingProperties){
+            [self addCommonPropertiesToReportingDictionary:self.errorReportingProperties withInterstitialPresenter:interstitialPresenter];
+            HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.ERROR adFormat:HyBidReportingAdFormat.FULLSCREEN properties:self.errorReportingProperties];
+            [[HyBid reportingManager] reportEventFor:reportingEvent];
+        }
         [self.interstitialPresenterDelegate interstitialPresenter:interstitialPresenter didFailWithError:error];
     }
 }
 
 - (void)interstitialPresenterDidAppear:(HyBidInterstitialPresenter *)interstitialPresenter {
-    
+    [self.skoverlay presentWithAd:interstitialPresenter.ad];
 }
 
 - (void)interstitialPresenterDidDisappear:(HyBidInterstitialPresenter *)interstitialPresenter {
-    
+    [self.skoverlay dismissEntirely:NO withAd:interstitialPresenter.ad causedByAutoCloseTimerCompletion:NO];
 }
 
 - (void)interstitialPresenterPresentsSKOverlay:(HyBidInterstitialPresenter *)interstitialPresenter {
@@ -188,7 +190,7 @@
 }
 
 - (void)interstitialPresenterDismissesSKOverlay:(HyBidInterstitialPresenter *)interstitialPresenter {
-    [self.skoverlay dismissWithAd:interstitialPresenter.ad];
+    [self.skoverlay dismissEntirely:YES withAd:interstitialPresenter.ad causedByAutoCloseTimerCompletion:NO];
 }
 
 @end

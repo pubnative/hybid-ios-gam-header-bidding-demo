@@ -93,12 +93,6 @@
     if ([HyBidSettings sharedInstance].isAirplaneModeEnabled) {
         self.adRequestModel.requestParameters[HyBidRequestParameter.airplaneMode] = [HyBidSettings sharedInstance].isAirplaneModeEnabled;
     }
-    if([HyBidSettings sharedInstance].totalDiskSpace) {
-        self.adRequestModel.requestParameters[HyBidRequestParameter.totalDiskSpace] = [HyBidSettings sharedInstance].totalDiskSpace;
-    }
-    if([HyBidSettings sharedInstance].availableDiskSpace) {
-        self.adRequestModel.requestParameters[HyBidRequestParameter.availableDiskSpace] = [HyBidSettings sharedInstance].availableDiskSpace;
-    }
     [self setIDFA:self.adRequestModel];
     
     NSString *locale = [HyBidSettings sharedInstance].locale;
@@ -133,7 +127,6 @@
         if ([HyBidSettings sharedInstance].appTrackingTransparency) {
             self.adRequestModel.requestParameters[HyBidRequestParameter.appTrackingTransparency] = [[HyBidSettings sharedInstance].appTrackingTransparency stringValue];
         }
-        self.adRequestModel.requestParameters[HyBidRequestParameter.geoFetch] = [HyBidSettings sharedInstance].geoFetchSupport;
     }
     
     if (@available(iOS 14.1, *)) {
@@ -146,7 +139,7 @@
         HyBidSkAdNetworkRequestModel *skAdNetworkRequestModel = [[HyBidSkAdNetworkRequestModel alloc] init];
     
         NSString *adIDs = [skAdNetworkRequestModel getSkAdNetworkAdNetworkIDsString];
-        if ([adIDs length] > 0) {
+        if (adIDs != nil && [adIDs length] > 0) {
             if ([skAdNetworkRequestModel getAppID] && [[skAdNetworkRequestModel getAppID] length] > 0) {
                 self.adRequestModel.requestParameters[HyBidRequestParameter.skAdNetworkAppID] = [skAdNetworkRequestModel getAppID];
             } else {
@@ -160,13 +153,24 @@
     }
     
     NSString* privacyString = [[HyBidUserDataManager sharedInstance] getIABUSPrivacyString];
-    if (!([privacyString length] == 0)) {
+    if (privacyString != nil && !([privacyString length] == 0)) {
         self.adRequestModel.requestParameters[HyBidRequestParameter.usprivacy] = privacyString;
     }
     
     NSString* consentString = [[HyBidUserDataManager sharedInstance] getIABGDPRConsentString];
-    if (!([consentString length] == 0)) {
+    if (consentString != nil && !([consentString length] == 0)) {
         self.adRequestModel.requestParameters[HyBidRequestParameter.userconsent] = consentString;
+    }
+    
+    NSString* gppString = [[HyBidUserDataManager sharedInstance] getInternalGPPString];
+    if (gppString != nil && !([gppString length] == 0)) {
+        self.adRequestModel.requestParameters[HyBidRequestParameter.gppstring] = gppString;
+    }
+    
+    NSString* gppSID = [[HyBidUserDataManager sharedInstance] getInternalGPPSID];
+    if (gppSID != nil && !([gppSID length] == 0)) {
+        self.adRequestModel.requestParameters[HyBidRequestParameter.gppsid] = [gppSID stringByReplacingOccurrencesOfString:@"_"
+                                                                                                                    withString:@","];;
     }
     
     if (![HyBidConsentConfig sharedConfig].coppa && ![[HyBidUserDataManager sharedInstance] isCCPAOptOut] && ![[HyBidUserDataManager sharedInstance] isConsentDenied]) {
@@ -245,35 +249,34 @@
     // Impression data
     self.adRequestModel.requestParameters[HyBidRequestParameter.clickbrowser] = @"1";
     self.adRequestModel.requestParameters[HyBidRequestParameter.topframe] = @"1";
-    self.adRequestModel.requestParameters[HyBidRequestParameter.mimes] = @"text/html,text/javascript";
-    self.adRequestModel.requestParameters[HyBidRequestParameter.videomimes] = @"video/mp4,video/webm";
-    self.adRequestModel.requestParameters[HyBidRequestParameter.boxingallowed] = @"0"; // No boxing
-    self.adRequestModel.requestParameters[HyBidRequestParameter.linearity] = @"1"; // Linear
-    self.adRequestModel.requestParameters[HyBidRequestParameter.playbackend] = @"1"; // Video finish or user action
-    self.adRequestModel.requestParameters[HyBidRequestParameter.mraidendcard] = @"true";
-    self.adRequestModel.requestParameters[HyBidRequestParameter.clickType] = @"3"; // Native browser
-    self.adRequestModel.requestParameters[HyBidRequestParameter.delivery] = @"3"; // Download
-    NSArray* inputLanguages = [HyBidSettings sharedInstance].inputLanguages;
-    if (inputLanguages && [inputLanguages count] > 0) {
-        self.adRequestModel.requestParameters[HyBidRequestParameter.inputLanguage] = [inputLanguages componentsJoinedByString:@","];
-    }
     
     NSString* darkMode = [HyBidSettings sharedInstance].isDarkModeEnabled;
     if (darkMode) {
         self.adRequestModel.requestParameters[HyBidRequestParameter.darkmode] = darkMode;
     }
     
-    if (adSize) {
-        if (adSize == HyBidAdSize.SIZE_INTERSTITIAL) {
+    if (adSize && ![adSize isEqualTo:HyBidAdSize.SIZE_NATIVE]) {
+        self.adRequestModel.requestParameters[HyBidRequestParameter.mimes] = @"text/html,text/javascript";
+        self.adRequestModel.requestParameters[HyBidRequestParameter.videomimes] = @"video/mp4,video/webm";
+        self.adRequestModel.requestParameters[HyBidRequestParameter.boxingallowed] = @"0"; // No boxing
+        self.adRequestModel.requestParameters[HyBidRequestParameter.linearity] = @"1"; // Linear
+        self.adRequestModel.requestParameters[HyBidRequestParameter.playbackend] = @"1"; // Video finish or user action
+        self.adRequestModel.requestParameters[HyBidRequestParameter.mraidendcard] = @"true";
+        self.adRequestModel.requestParameters[HyBidRequestParameter.delivery] = @"3"; // Download
+        self.adRequestModel.requestParameters[HyBidRequestParameter.clickType] = @"3"; // Native browser
+        
+        if ([adSize isEqualTo: HyBidAdSize.SIZE_INTERSTITIAL]) {
             self.adRequestModel.requestParameters[HyBidRequestParameter.interstitial] = @"1";
             self.adRequestModel.requestParameters[HyBidRequestParameter.pos] = HyBidImpressionConstants.PLACEMENT_POSITION_FULLSCREEN;
+            self.adRequestModel.requestParameters[HyBidRequestParameter.videoPosition] = HyBidImpressionConstants.PLACEMENT_POSITION_FULLSCREEN;
             self.adRequestModel.requestParameters[HyBidRequestParameter.placement] = HyBidImpressionConstants.VIDEO_PLACEMENT_TYPE_INTERSTITIAL;
             self.adRequestModel.requestParameters[HyBidRequestParameter.placementSubtype] = HyBidImpressionConstants.VIDEO_PLACEMENT_SUBTYPE_INTERSTITIAL;
             self.adRequestModel.requestParameters[HyBidRequestParameter.playbackmethod] = [NSString stringWithFormat:@"%@,%@", HyBidImpressionConstants.VIDEO_PLAYBACK_METHOD_PAGE_LOAD_SOUND_ON, HyBidImpressionConstants.VIDEO_PLAYBACK_METHOD_PAGE_LOAD_SOUND_OFF];
         } else {
             self.adRequestModel.requestParameters[HyBidRequestParameter.interstitial] = @"0";
             self.adRequestModel.requestParameters[HyBidRequestParameter.pos] = HyBidImpressionConstants.PLACEMENT_POSITION_UNKNOWN;
-            self.adRequestModel.requestParameters[HyBidRequestParameter.placement] = HyBidImpressionConstants.VIDEO_PLACEMENT_SUBTYPE_STANDALONE;
+            self.adRequestModel.requestParameters[HyBidRequestParameter.videoPosition] = HyBidImpressionConstants.PLACEMENT_POSITION_UNKNOWN;
+            self.adRequestModel.requestParameters[HyBidRequestParameter.placementSubtype] = HyBidImpressionConstants.VIDEO_PLACEMENT_SUBTYPE_STANDALONE;
             self.adRequestModel.requestParameters[HyBidRequestParameter.expandDirection] = [NSString stringWithFormat:@"%@,%@", HyBidImpressionConstants.EXPANDABLE_DIRECTION_FULLSCREEN, HyBidImpressionConstants.EXPANDABLE_DIRECTION_RESIZE_MINIMIZE];
             self.adRequestModel.requestParameters[HyBidRequestParameter.playbackmethod] = [NSString stringWithFormat:@"%@,%@", HyBidImpressionConstants.VIDEO_PLAYBACK_METHOD_ENTER_VIEWPORT_SOUND_ON, HyBidImpressionConstants.VIDEO_PLAYBACK_METHOD_ENTER_VIEWPORT_SOUND_OFF];
         }

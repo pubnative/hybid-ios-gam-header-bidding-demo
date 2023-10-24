@@ -31,6 +31,7 @@
 #import "HyBid.h"
 #import "StoreKit/StoreKit.h"
 #import "HyBidSKAdNetworkParameter.h"
+#import "HyBidCustomClickUtil.h"
 
 #if __has_include(<HyBid/HyBid-Swift.h>)
     #import <UIKit/UIKit.h>
@@ -81,7 +82,8 @@
                                            serviceDelegate:self
                                         rootViewController:[UIApplication sharedApplication].topViewController
                                                contentInfo:self.adModel.contentInfo
-                                                skipOffset:_skipOffset];
+                                                skipOffset:_skipOffset
+                                                 isEndcard:NO];
 }
 
 - (void)show {
@@ -132,7 +134,10 @@
     
     HyBidSkAdNetworkModel* skAdNetworkModel = self.ad.isUsingOpenRTB ? [self.adModel getOpenRTBSkAdNetworkModel] : [self.adModel getSkAdNetworkModel];
     
-    if (skAdNetworkModel) {
+    NSString *customUrl = [HyBidCustomClickUtil extractPNClickUrl:url.absoluteString];
+    if (customUrl != nil) {
+        [self.serviceProvider openBrowser:customUrl];
+    } else if (skAdNetworkModel) {
         NSMutableDictionary* productParams = [[skAdNetworkModel getStoreKitParameters] mutableCopy];
 
         [self insertFidelitiesIntoDictionaryIfNeeded:productParams];
@@ -143,6 +148,7 @@
                 [productParams removeObjectForKey:HyBidSKAdNetworkParameter.fidelityType];
                 HyBidSKAdNetworkViewController *skAdnetworkViewController = [[HyBidSKAdNetworkViewController alloc] initWithProductParameters:productParams];
                 skAdnetworkViewController.delegate = self;
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"SKStoreProductViewIsReadyToPresent" object:nil];
                 [[UIApplication sharedApplication].topViewController presentViewController:skAdnetworkViewController animated:true completion:nil];
                 [self.delegate rewardedPresenterDidDisappear:self];
             });
@@ -173,7 +179,10 @@
     
     HyBidSkAdNetworkModel* skAdNetworkModel = [self.adModel getSkAdNetworkModel];
     
-    if (skAdNetworkModel) {
+    NSString *customUrl = [HyBidCustomClickUtil extractPNClickUrl:urlString];
+    if (customUrl != nil) {
+        [self.serviceProvider openBrowser:customUrl];
+    } else if (skAdNetworkModel) {
         NSMutableDictionary* productParams = [[skAdNetworkModel getStoreKitParameters] mutableCopy];
         
         [self insertFidelitiesIntoDictionaryIfNeeded:productParams];
@@ -184,6 +193,7 @@
                 [productParams removeObjectForKey:HyBidSKAdNetworkParameter.fidelityType];
                 HyBidSKAdNetworkViewController *skAdnetworkViewController = [[HyBidSKAdNetworkViewController alloc] initWithProductParameters:productParams];
                 skAdnetworkViewController.delegate = self;
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"SKStoreProductViewIsReadyToPresent" object:nil];
                 [[UIApplication sharedApplication].topViewController presentViewController:skAdnetworkViewController animated:true completion:nil];
                 [self.delegate rewardedPresenterDidDisappear:self];
                 
