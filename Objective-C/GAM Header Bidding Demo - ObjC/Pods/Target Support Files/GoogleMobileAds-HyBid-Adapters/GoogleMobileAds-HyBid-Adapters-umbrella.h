@@ -10,13 +10,6 @@
 #endif
 #endif
 
-#import "HyBidAdMobMediationBannerCustomEvent.h"
-#import "HyBidAdMobMediationInterstitialCustomEvent.h"
-#import "HyBidAdMobMediationLeaderboardCustomEvent.h"
-#import "HyBidAdMobMediationMRectCustomEvent.h"
-#import "HyBidAdMobMediationNativeCustomEvent.h"
-#import "HyBidAdMobMediationRewardedCustomEvent.h"
-#import "HyBidAdMobUtils.h"
 #import "HyBidGADBannerCustomEvent.h"
 #import "HyBidGADBaseCustomEvent.h"
 #import "HyBidGADInterstitialCustomEvent.h"
@@ -25,11 +18,6 @@
 #import "HyBidGADNativeCustomEvent.h"
 #import "HyBidGADRewardedCustomEvent.h"
 #import "HyBidGADUtils.h"
-#import "HyBidDFPHeaderBiddingBannerCustomEvent.h"
-#import "HyBidDFPHeaderBiddingInterstitialCustomEvent.h"
-#import "HyBidDFPHeaderBiddingLeaderboardCustomEvent.h"
-#import "HyBidDFPHeaderBiddingMRectCustomEvent.h"
-#import "HyBidDFPUtils.h"
 #import "HyBidGAMBannerCustomEvent.h"
 #import "HyBidGAMBaseCustomEvent.h"
 #import "HyBidGAMInterstitialCustomEvent.h"

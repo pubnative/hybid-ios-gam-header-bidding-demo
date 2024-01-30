@@ -6,5 +6,5 @@ target 'GAM Header Bidding Demo - ObjC' do
   use_frameworks!
 
   # Pods for GAM Header Bidding Demo - ObjC
-  pod 'GoogleMobileAds-HyBid-Adapters', '2.20.0.0'
+  pod 'GoogleMobileAds-HyBid-Adapters', '2.21.0.0'
 end
