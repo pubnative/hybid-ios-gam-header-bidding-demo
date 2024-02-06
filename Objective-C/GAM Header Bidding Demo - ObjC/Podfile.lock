@@ -22,9 +22,9 @@ PODS:
     - GoogleUtilities/Network (~> 7.11)
     - "GoogleUtilities/NSData+zlib (~> 7.11)"
     - nanopb (< 2.30910.0, >= 2.30908.0)
-  - GoogleMobileAds-HyBid-Adapters (2.21.0.0):
+  - GoogleMobileAds-HyBid-Adapters (2.21.1.0):
     - Google-Mobile-Ads-SDK (~> 10.0)
-    - HyBid (= 2.21.0)
+    - HyBid (= 2.21.1)
   - GoogleUserMessagingPlatform (2.1.0)
   - GoogleUtilities/AppDelegateSwizzler (7.12.0):
     - GoogleUtilities/Environment
@@ -43,20 +43,20 @@ PODS:
   - "GoogleUtilities/NSData+zlib (7.12.0)"
   - GoogleUtilities/Reachability (7.12.0):
     - GoogleUtilities/Logger
-  - HyBid (2.21.0):
-    - HyBid/Banner (= 2.21.0)
-    - HyBid/Core (= 2.21.0)
-    - HyBid/FullScreen (= 2.21.0)
-    - HyBid/Native (= 2.21.0)
-    - HyBid/RewardedVideo (= 2.21.0)
-  - HyBid/Banner (2.21.0):
+  - HyBid (2.21.1):
+    - HyBid/Banner (= 2.21.1)
+    - HyBid/Core (= 2.21.1)
+    - HyBid/FullScreen (= 2.21.1)
+    - HyBid/Native (= 2.21.1)
+    - HyBid/RewardedVideo (= 2.21.1)
+  - HyBid/Banner (2.21.1):
     - HyBid/Core
-  - HyBid/Core (2.21.0)
-  - HyBid/FullScreen (2.21.0):
+  - HyBid/Core (2.21.1)
+  - HyBid/FullScreen (2.21.1):
     - HyBid/Core
-  - HyBid/Native (2.21.0):
+  - HyBid/Native (2.21.1):
     - HyBid/Core
-  - HyBid/RewardedVideo (2.21.0):
+  - HyBid/RewardedVideo (2.21.1):
     - HyBid/Core
   - nanopb (2.30909.1):
     - nanopb/decode (= 2.30909.1)
@@ -66,7 +66,7 @@ PODS:
   - PromisesObjC (2.3.1)
 
 DEPENDENCIES:
-  - GoogleMobileAds-HyBid-Adapters (= 2.21.0.0)
+  - GoogleMobileAds-HyBid-Adapters (= 2.21.1.0)
 
 SPEC REPOS:
   trunk:
@@ -82,13 +82,13 @@ SPEC REPOS:
 SPEC CHECKSUMS:
   Google-Mobile-Ads-SDK: 8f67a72f88d057335b1ac3f501e2b68ad054116e
   GoogleAppMeasurement: bb3c564c3efb933136af0e94899e0a46167466a8
-  GoogleMobileAds-HyBid-Adapters: 198b1c5dac0bf362ccc1f57e42d82514ff93ef37
+  GoogleMobileAds-HyBid-Adapters: d5ee3511583ce74870409ed564b7c208538d1895
   GoogleUserMessagingPlatform: dce302b8f1b84d6e945812ee7a15c3f65a102cbf
   GoogleUtilities: 0759d1a57ebb953965c2dfe0ba4c82e95ccc2e34
-  HyBid: e2de98de9f4d31e4ee06532d1f1878e921aa0506
+  HyBid: 4522aa66455212ad4df4e37538cdf6f253d518be
   nanopb: d4d75c12cd1316f4a64e3c6963f879ecd4b5e0d5
   PromisesObjC: c50d2056b5253dadbd6c2bea79b0674bd5a52fa4
 
-PODFILE CHECKSUM: 7432b5603bccd3a629f4c9699dc7e9ec803f5dbe
+PODFILE CHECKSUM: 13b59ec736c5ae2d8b2900a79dd7d38d75a9412c
 
 COCOAPODS: 1.14.3

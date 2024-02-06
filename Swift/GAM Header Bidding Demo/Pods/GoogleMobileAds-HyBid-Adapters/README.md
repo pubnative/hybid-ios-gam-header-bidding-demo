@@ -24,7 +24,7 @@ It will install HyBid Adapters, as well as HyBid iOS SDK and Google Mobile Ads i
 
 ```ruby
 platform :ios, '10.0'
-pod 'GoogleMobileAds-HyBid-Adapters', '2.21.0.0'
+pod 'GoogleMobileAds-HyBid-Adapters', '2.21.1.0'
 ```
 
 2. Run `pod install --repo-update` to install the pod in your project.
