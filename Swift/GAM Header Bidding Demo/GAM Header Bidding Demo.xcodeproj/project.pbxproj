@@ -128,6 +128,7 @@
 				5AFED860266AA03A005C2585 /* Frameworks */,
 				5AFED861266AA03A005C2585 /* Resources */,
 				8A023630102348CA253C3353 /* [CP] Embed Pods Frameworks */,
+				8D1790449B6CDB6750A8BF17 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -200,6 +201,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-GAM Header Bidding Demo/Pods-GAM Header Bidding Demo-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		8D1790449B6CDB6750A8BF17 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-GAM Header Bidding Demo/Pods-GAM Header Bidding Demo-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-GAM Header Bidding Demo/Pods-GAM Header Bidding Demo-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-GAM Header Bidding Demo/Pods-GAM Header Bidding Demo-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		91E2E909E7D312E7E969370F /* [CP] Check Pods Manifest.lock */ = {

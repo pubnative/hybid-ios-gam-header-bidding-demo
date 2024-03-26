@@ -36,7 +36,7 @@ SOFTWARE.
 
 ## GoogleUserMessagingPlatform
 
-Copyright 2023 Google
+Copyright 2024 Google LLC
 
 ## GoogleUtilities
 
