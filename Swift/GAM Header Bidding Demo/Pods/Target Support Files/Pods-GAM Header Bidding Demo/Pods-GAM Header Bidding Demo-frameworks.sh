@@ -180,7 +180,6 @@ if [[ "$CONFIGURATION" == "Debug" ]]; then
   install_framework "${BUILT_PRODUCTS_DIR}/HyBid/HyBid.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/PromisesObjC/FBLPromises.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework"
-  install_framework "${PODS_XCFRAMEWORKS_BUILD_DIR}/ATOM-Standalone/ATOM.framework"
   install_framework "${PODS_XCFRAMEWORKS_BUILD_DIR}/HyBid/Core/OMSDK_Pubnativenet.framework"
 fi
 if [[ "$CONFIGURATION" == "Release" ]]; then
@@ -188,7 +187,6 @@ if [[ "$CONFIGURATION" == "Release" ]]; then
   install_framework "${BUILT_PRODUCTS_DIR}/HyBid/HyBid.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/PromisesObjC/FBLPromises.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework"
-  install_framework "${PODS_XCFRAMEWORKS_BUILD_DIR}/ATOM-Standalone/ATOM.framework"
   install_framework "${PODS_XCFRAMEWORKS_BUILD_DIR}/HyBid/Core/OMSDK_Pubnativenet.framework"
 fi
 if [ "${COCOAPODS_PARALLEL_CODE_SIGN}" == "true" ]; then
