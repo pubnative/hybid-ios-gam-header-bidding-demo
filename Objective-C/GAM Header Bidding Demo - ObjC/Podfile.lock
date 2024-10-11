@@ -1,42 +1,49 @@
 PODS:
-  - Google-Mobile-Ads-SDK (11.6.0):
+  - ATOM-Standalone (3.3.0)
+  - Google-Mobile-Ads-SDK (11.10.0):
     - GoogleUserMessagingPlatform (>= 1.1)
-  - GoogleMobileAds-HyBid-Adapters (3.0.3.0):
+  - GoogleMobileAds-HyBid-Adapters (3.1.1.0):
     - Google-Mobile-Ads-SDK (~> 11.0)
-    - HyBid (= 3.0.3)
-  - GoogleUserMessagingPlatform (2.5.0)
-  - HyBid (3.0.3):
-    - HyBid/Banner (= 3.0.3)
-    - HyBid/Core (= 3.0.3)
-    - HyBid/FullScreen (= 3.0.3)
-    - HyBid/Native (= 3.0.3)
-    - HyBid/RewardedVideo (= 3.0.3)
-  - HyBid/Banner (3.0.3):
+    - HyBid (= 3.1.1)
+  - GoogleUserMessagingPlatform (2.6.0)
+  - HyBid (3.1.1):
+    - HyBid/ATOM (= 3.1.1)
+    - HyBid/Banner (= 3.1.1)
+    - HyBid/Core (= 3.1.1)
+    - HyBid/FullScreen (= 3.1.1)
+    - HyBid/Native (= 3.1.1)
+    - HyBid/RewardedVideo (= 3.1.1)
+  - HyBid/ATOM (3.1.1):
+    - ATOM-Standalone (~> 3.3.0)
     - HyBid/Core
-  - HyBid/Core (3.0.3)
-  - HyBid/FullScreen (3.0.3):
+  - HyBid/Banner (3.1.1):
     - HyBid/Core
-  - HyBid/Native (3.0.3):
+  - HyBid/Core (3.1.1)
+  - HyBid/FullScreen (3.1.1):
     - HyBid/Core
-  - HyBid/RewardedVideo (3.0.3):
+  - HyBid/Native (3.1.1):
+    - HyBid/Core
+  - HyBid/RewardedVideo (3.1.1):
     - HyBid/Core
 
 DEPENDENCIES:
-  - GoogleMobileAds-HyBid-Adapters (= 3.0.3.0)
+  - GoogleMobileAds-HyBid-Adapters (= 3.1.1.0)
 
 SPEC REPOS:
   trunk:
+    - ATOM-Standalone
     - Google-Mobile-Ads-SDK
     - GoogleMobileAds-HyBid-Adapters
     - GoogleUserMessagingPlatform
     - HyBid
 
 SPEC CHECKSUMS:
-  Google-Mobile-Ads-SDK: 28339250757645a9bab066ebbe667fa48d2c9bd7
-  GoogleMobileAds-HyBid-Adapters: 27ccfceb8076ab9de52433498c1278b65db76d93
-  GoogleUserMessagingPlatform: 6b4f48a370e77ce121d034c908cc6ee4fdafaf13
-  HyBid: 919c190836d93f411370df8b90ee58a8aaf8b709
+  ATOM-Standalone: e2f8efa4fc237d001cdc91a7c217124c20455ee7
+  Google-Mobile-Ads-SDK: 13e6e98edfd78ad8d8a791edb927658cc260a56f
+  GoogleMobileAds-HyBid-Adapters: a60d37966c7338492dfa162417d9f7d691b60311
+  GoogleUserMessagingPlatform: 0c3a08353e53ce8c2feab7addd0b652cde522450
+  HyBid: 85eb7cc73f6168516087496c083c7d6904e4fd2a
 
-PODFILE CHECKSUM: 5b000218b8d4bf2c769703127afb6a248ea98cf8
+PODFILE CHECKSUM: 38aa24f2acde0256715838f29a6ca60eaf187619
 
 COCOAPODS: 1.15.2
