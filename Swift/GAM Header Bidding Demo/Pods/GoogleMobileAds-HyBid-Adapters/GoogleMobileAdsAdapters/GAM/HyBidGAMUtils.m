@@ -1,5 +1,5 @@
 //
-//  Copyright © 2024 PubNative. All rights reserved.
+//  Copyright © 2020 PubNative. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -62,12 +62,12 @@ NSString *const PNLiteGAMAdapterKeyZoneID = @"pn_zone_id";
 }
 
 
-// v: 3.1.1
+// v: 3.1.2
 + (GADVersionNumber)adSDKVersion {
     GADVersionNumber version = {0};
     version.majorVersion = 3;
     version.minorVersion = 1;
-    version.patchVersion = 1;
+    version.patchVersion = 2;
     return version;
 }
 
@@ -75,7 +75,7 @@ NSString *const PNLiteGAMAdapterKeyZoneID = @"pn_zone_id";
     GADVersionNumber version = {0};
     version.majorVersion = 3;
     version.minorVersion = 1;
-    version.patchVersion = 1;
+    version.patchVersion = 2;
     return version;
 }
 
