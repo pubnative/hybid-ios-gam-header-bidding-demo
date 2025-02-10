@@ -37,7 +37,7 @@
 @implementation HyBidInterstitialPresenterFactory
 
 - (HyBidInterstitialPresenter *)createInterstitalPresenterWithAd:(HyBidAd *)ad
-                                             withVideoSkipOffset:(NSUInteger)videoSkipOffset
+                                             withVideoSkipOffset:(HyBidSkipOffset *)videoSkipOffset
                                               withHTMLSkipOffset:(NSUInteger)htmlSkipOffset
                                                withCloseOnFinish:(BOOL)closeOnFinish
                                                     withDelegate:(NSObject<HyBidInterstitialPresenterDelegate> *)delegate {
@@ -49,7 +49,21 @@
         return nil;
     }
     
-    HyBidAdTracker *adTracker = [[HyBidAdTracker alloc] initWithImpressionURLs:[ad beaconsDataWithType:PNLiteAdTrackerImpression] withClickURLs:[ad beaconsDataWithType:PNLiteAdTrackerClick] forAd:ad];
+    NSArray *impressionBeacons = [ad beaconsDataWithType:PNLiteAdTrackerImpression];
+    NSArray *clickBeacons = [ad beaconsDataWithType:PNLiteAdTrackerClick];
+    
+    NSArray *customEndcardImpressionBeacons = [ad beaconsDataWithType:PNLiteAdCustomEndCardImpression];
+    NSArray *customEndcardClickBeacons = [ad beaconsDataWithType:PNLiteAdCustomEndCardClick];
+    
+    HyBidCustomCTATracking *customCTATracking = [[HyBidCustomCTATracking alloc] initWithAd:ad];
+
+    HyBidAdTracker *adTracker = [[HyBidAdTracker alloc] initWithImpressionURLs:impressionBeacons
+                                               withCustomEndcardImpressionURLs:customEndcardImpressionBeacons
+                                                                 withClickURLs:clickBeacons
+                                                    withCustomEndcardClickURLs:customEndcardClickBeacons
+                                                         withCustomCTATracking:customCTATracking
+                                                                         forAd:ad];
+    
     PNLiteInterstitialPresenterDecorator *interstitialPresenterDecorator = [[PNLiteInterstitialPresenterDecorator alloc] initWithInterstitialPresenter:interstitialPresenter
                                                                                                                                          withAdTracker: adTracker
                                                                                                                                           withDelegate:delegate];
@@ -58,7 +72,7 @@
 }
     
 - (HyBidInterstitialPresenter *)createInterstitalPresenterFromAd:(HyBidAd *)ad
-                                             withVideoSkipOffset:(NSUInteger)videoSkipOffset
+                                             withVideoSkipOffset:(HyBidSkipOffset *)videoSkipOffset
                                               withHTMLSkipOffset:(NSUInteger)htmlSkipOffset
                                                withCloseOnFinish: (BOOL)closeOnFinish {
     NSNumber *adAssetGroupID = ad.isUsingOpenRTB

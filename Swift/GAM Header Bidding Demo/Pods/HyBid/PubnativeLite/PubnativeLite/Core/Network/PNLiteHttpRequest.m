@@ -46,7 +46,6 @@ NSInteger const MAX_RETRIES = 1;
 @interface PNLiteHttpRequest ()
 
 @property (nonatomic, strong) NSObject<PNLiteHttpRequestDelegate> *delegate;
-@property (nonatomic, strong) NSString *urlString;
 @property (nonatomic, strong) NSString *method;
 @property (nonatomic, assign) NSInteger retryCount;
 @property (nonatomic, strong) NSDictionary *jsonBodyDict;
@@ -65,6 +64,12 @@ NSInteger const MAX_RETRIES = 1;
     self.body = nil;
     self.isUsingOpenRTB = nil;
     self.adRequestModel = nil;
+    self.trackingType = nil;
+}
+
+- (void)startWithUrlString:(NSString *)urlString withMethod:(NSString *)method delegate:(NSObject<PNLiteHttpRequestDelegate> *)delegate withTrackingType:(NSString *)trackingType {
+    self.trackingType = trackingType;
+    [self startWithUrlString:urlString withMethod:method delegate:delegate];
 }
 
 - (void)startWithUrlString:(NSString *)urlString withMethod:(NSString *)method delegate:(NSObject<PNLiteHttpRequestDelegate> *)delegate
@@ -154,8 +159,10 @@ NSInteger const MAX_RETRIES = 1;
             NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
             if (error) {
                 [self invokeFailWithError:error andAttemptRetry:NO];
-                HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.ERROR errorMessage: error.localizedDescription properties:nil];
-                [[HyBid reportingManager] reportEventFor:reportingEvent];
+                if ([HyBidSDKConfig sharedConfig].reporting) {
+                    HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.ERROR errorMessage: error.localizedDescription properties:nil];
+                    [[HyBid reportingManager] reportEventFor:reportingEvent];
+                }
             } else {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self invokeFinishWithData:data statusCode:httpResponse.statusCode];

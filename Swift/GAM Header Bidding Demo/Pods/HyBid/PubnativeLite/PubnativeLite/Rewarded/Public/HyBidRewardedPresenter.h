@@ -22,6 +22,9 @@
 
 #import <Foundation/Foundation.h>
 #import "HyBidAd.h"
+#import "HyBidCustomCTAViewDelegate.h"
+#import "HyBidSKOverlay.h"
+#import "HyBidSKOverlayDelegate.h"
 
 @class HyBidRewardedPresenter;
 
@@ -36,10 +39,23 @@
              didFailWithError:(NSError *)error;
 
 @optional
+- (void)rewardedPresenterDidLoad:(HyBidRewardedPresenter *)rewardedPresenter viewController:(UIViewController *)viewController;
 - (void)rewardedPresenterDidAppear:(HyBidRewardedPresenter *)rewardedPresenter;
 - (void)rewardedPresenterDidDisappear:(HyBidRewardedPresenter *)rewardedPresenter;
 - (void)rewardedPresenterPresentsSKOverlay:(HyBidRewardedPresenter *)rewardedPresenter;
 - (void)rewardedPresenterDismissesSKOverlay:(HyBidRewardedPresenter *)rewardedPresenter;
+- (void)rewardedPresenterDismissesCustomCTA:(HyBidRewardedPresenter *)rewardedPresenter;
+- (void)rewardedPresenteWillPresentEndCard:(HyBidRewardedPresenter *)rewardedPresenter
+                         skoverlayDelegate:(id<HyBidSKOverlayDelegate>)skoverlayDelegate
+                         customCTADelegate:(id<HyBidCustomCTAViewDelegate>)customCTADelegate;
+- (void)rewardedPresenteDidPresentCustomEndCard:(HyBidRewardedPresenter *)rewardedPresenter;
+- (void)rewardedPresenterDidPresentsCustomCTA;
+- (void)rewardedPresenterDidClickCustomCTAOnEndCard:(BOOL)OnEndCard;
+- (void)rewardedPresenterDidPresentCustomEndCard:(HyBidRewardedPresenter *)rewardedPresenter;
+- (void)rewardedPresenterDidSKOverlayAutomaticClick:(HyBidRewardedPresenter *)rewardedPresenter
+                                              clickType:(HyBidSKOverlayAutomaticCLickType)clickType;
+- (void)rewardedPresenterDidStorekitAutomaticClick:(HyBidRewardedPresenter *)rewardedPresenter
+                                              clickType:(HyBidStorekitAutomaticClickType)clickType;
 
 @end
 
@@ -47,6 +63,8 @@
 
 @property (nonatomic, readonly) HyBidAd *ad;
 @property (nonatomic) NSObject <HyBidRewardedPresenterDelegate> *delegate;
+@property (nonatomic) NSObject <HyBidCustomCTAViewDelegate> *customCTADelegate;
+@property (nonatomic) NSObject <HyBidSKOverlayDelegate> *skoverlayDelegate;
 
 - (void)load;
 

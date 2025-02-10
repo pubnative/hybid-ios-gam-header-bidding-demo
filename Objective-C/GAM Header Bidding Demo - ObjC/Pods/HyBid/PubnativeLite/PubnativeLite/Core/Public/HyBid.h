@@ -125,11 +125,23 @@ FOUNDATION_EXPORT const unsigned char HyBidVersionString[];
 #import "HyBidSkAdNetworkRequestModel.h"
 #import "HyBidSKAdNetworkParameter.h"
 #import "HyBidWebBrowserUserAgentInfo.h"
+#import "HyBidTimerState.h"
+#import "HyBidCustomCTAViewDelegate.h"
+#import "HyBidSKOverlay.h"
+#import "HyBidConfigModel.h"
+#import "HyBidConfig.h"
+#import "HyBidConfigManager.h"
+#import "NSUserDefaults+HyBidCustomMethods.h"
+#import "HyBidSKOverlayDelegate.h"
+#import "HyBidInternalWebBrowserDelegate.h"
 
 // For swift compatibility, we are making this file public instead of private
 // Avoid using custom module map
 #import "PNLiteLocationManager.h"
 #import "PNLiteAdRequestModel.h"
+#import "HyBidVASTEventProcessor.h"
+#import "HyBidVASTImpression.h"
+#import "UIApplication+PNLiteTopViewController.h"
 
 @class HyBidTargetingModel;
 @class HyBidReportingManager;
@@ -163,10 +175,17 @@ typedef enum {
     HyBidCustomEndcardDisplayFallback
 } HyBidCustomEndcardDisplayBehaviour;
 
+typedef enum {
+    HyBidWebBrowserNavigationExternal,
+    HyBidWebBrowserNavigationInternal
+} HyBidWebBrowserNavigation;
+
 static NSString * const HyBidCustomEndcardDisplayExtentionValue = @"extension";
 static NSString * const HyBidCustomEndcardDisplayFallbackValue = @"fallback";
-
-#define kIsUsingOpenRTB @"isUsingOpenRTB"
+static NSString * const HyBidAdExperiencePerformanceValue = @"performance";
+static NSString * const HyBidAdExperienceBrandValue = @"brand";
+static NSString * const HyBidWebBrowserNavigationExternalValue = @"external";
+static NSString * const HyBidWebBrowserNavigationInternalValue = @"internal";
 
 //PNLiteAssetGroupType
 static const unsigned int MRAID_320x50 = 10;
@@ -203,5 +222,7 @@ typedef void (^HyBidCompletionBlock)(BOOL);
 + (NSString*)getSDKVersionInfo;
 + (NSString*)getCustomRequestSignalData;
 + (NSString*)getCustomRequestSignalData:(NSString*) mediationVendorName;
++ (void)setReporting:(BOOL)enabled;
++ (void)rightToBeForgotten;
 
 @end

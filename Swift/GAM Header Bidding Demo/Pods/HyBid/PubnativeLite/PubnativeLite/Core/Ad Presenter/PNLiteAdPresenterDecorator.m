@@ -105,35 +105,6 @@ NSString * const kUserDefaultsHyBidPreviousBannerPresenterDecoratorKey = @"kUser
     return self;
 }
 
-- (void)addCommonPropertiesToReportingDictionary:(NSMutableDictionary *)reportingDictionary withAdPresenter:(HyBidAdPresenter *)adPresenter {
-    if ([HyBidSDKConfig sharedConfig].appToken != nil && [HyBidSDKConfig sharedConfig].appToken.length > 0) {
-        [reportingDictionary setObject:[HyBidSDKConfig sharedConfig].appToken forKey:HyBidReportingCommon.APPTOKEN];
-    }
-    if (adPresenter.ad.zoneID != nil && adPresenter.ad.zoneID.length > 0) {
-        [reportingDictionary setObject:adPresenter.ad.zoneID forKey:HyBidReportingCommon.ZONE_ID];
-    }
-    if (adPresenter.ad.assetGroupID) {
-        switch (adPresenter.ad.assetGroupID.integerValue) {
-            case VAST_MRECT: {
-                [reportingDictionary setObject:@"VAST" forKey:HyBidReportingCommon.AD_TYPE];
-                NSString *vast = adPresenter.ad.isUsingOpenRTB
-                ? adPresenter.ad.openRtbVast
-                : adPresenter.ad.vast;
-                if (vast) {
-                    [reportingDictionary setObject:vast forKey:HyBidReportingCommon.CREATIVE];
-                }
-                break;
-            }
-            default:
-                [reportingDictionary setObject:@"HTML" forKey:HyBidReportingCommon.AD_TYPE];
-                if (adPresenter.ad.htmlData) {
-                    [reportingDictionary setObject:adPresenter.ad.htmlData forKey:HyBidReportingCommon.CREATIVE];
-                }
-                break;
-        }
-    }
-}
-
 #pragma mark HyBidAdPresenterDelegate
 
 - (void)adPresenter:(HyBidAdPresenter *)adPresenter didLoadWithAd:(UIView *)adView {
@@ -160,20 +131,27 @@ NSString * const kUserDefaultsHyBidPreviousBannerPresenterDecoratorKey = @"kUser
 
 - (void)adPresenterDidClick:(HyBidAdPresenter *)adPresenter {
     if (self.adPresenterDelegate && [self.adPresenterDelegate respondsToSelector:@selector(adPresenterDidClick:)]) {
-        [self.adTracker trackClickWithAdFormat:HyBidReportingAdFormat.BANNER];
+        if (self.adPresenter.ad.shouldReportCustomEndcardImpression) {
+            [self.adTracker trackCustomEndCardClickWithAdFormat:HyBidReportingAdFormat.BANNER];
+        } else {
+            [self.adTracker trackClickWithAdFormat:HyBidReportingAdFormat.BANNER];
+        }
         [self.adPresenterDelegate adPresenterDidClick:adPresenter];
     }
 }
 
 - (void)adPresenter:(HyBidAdPresenter *)adPresenter didFailWithError:(NSError *)error {
     if (self.adPresenterDelegate && [self.adPresenterDelegate respondsToSelector:@selector(adPresenter:didFailWithError:)]) {
-        if (error != nil && error.localizedDescription != nil && error.localizedDescription.length > 0) {
-            [self.errorReportingProperties setObject:error.localizedDescription forKey:HyBidReportingCommon.ERROR_MESSAGE];
-        }
-        if(self.errorReportingProperties) {
-            [self addCommonPropertiesToReportingDictionary:self.errorReportingProperties withAdPresenter:adPresenter];
-            HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.ERROR adFormat:HyBidReportingAdFormat.BANNER properties:self.errorReportingProperties];
-            [[HyBid reportingManager] reportEventFor:reportingEvent];
+        if ([HyBidSDKConfig sharedConfig].reporting) {
+            if (error != nil && error.localizedDescription != nil && error.localizedDescription.length > 0) {
+                [self.errorReportingProperties setObject:error.localizedDescription forKey:HyBidReportingCommon.ERROR_MESSAGE];
+            }
+            if(self.errorReportingProperties) {
+                [self.errorReportingProperties addEntriesFromDictionary:[[HyBid reportingManager] addCommonPropertiesForAd:adPresenter.ad withRequest:nil]];
+                
+                HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.ERROR adFormat:HyBidReportingAdFormat.BANNER properties:self.errorReportingProperties];
+                [[HyBid reportingManager] reportEventFor:reportingEvent];
+            }
         }
         [self.adPresenterDelegate adPresenter:adPresenter didFailWithError:error];
     }
@@ -198,6 +176,12 @@ NSString * const kUserDefaultsHyBidPreviousBannerPresenterDecoratorKey = @"kUser
 
 - (void)adPresenterDidDisappear:(HyBidAdPresenter *)adPresenter {
     
+}
+
+- (void)adPresenterDidPresentCustomEndCard:(HyBidAdPresenter *)adPresenter {
+    if (self.adPresenter.ad.shouldReportCustomEndcardImpression) {
+        [self.adTracker trackCustomEndCardImpressionWithAdFormat:HyBidReportingAdFormat.BANNER];
+    }
 }
 
 #pragma mark PNLiteImpressionTrackerDelegate

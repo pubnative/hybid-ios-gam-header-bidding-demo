@@ -58,6 +58,7 @@
                          withSupportedAPIFrameworks:(NSArray<NSString *> *)supportedAPIFrameworks
                                 withIntegrationType:(IntegrationType)integrationType
                                          isRewarded:(BOOL)isRewarded
+                                     isUsingOpenRTB:(BOOL)isUsingOpenRTB
                                 mediationVendorName: (NSString*) mediationVendorName{
     self.adRequestModel = [[PNLiteAdRequestModel alloc] init];
     self.adRequestModel.requestParameters[HyBidRequestParameter.zoneId] = zoneID;
@@ -111,8 +112,6 @@
             self.adRequestModel.requestParameters[HyBidRequestParameter.carrierMCCMNC] = carrierMCCMNC;
         }
     }
-
-    BOOL isUsingOpenRTB = [[NSUserDefaults standardUserDefaults] boolForKey:kIsUsingOpenRTB];
     if (isUsingOpenRTB) {
         self.adRequestModel.requestParameters[HyBidRequestParameter.ip] = [HyBidSettings sharedInstance].ip;
     }
@@ -181,8 +180,8 @@
             CLLocation* location = [HyBidSettings sharedInstance].location;
             
             if (location && location.coordinate.latitude != 0.0 && location.coordinate.longitude != 0.0) {
-                NSString* lat = [NSString stringWithFormat:@"%f", location.coordinate.latitude];
-                NSString* lon = [NSString stringWithFormat:@"%f", location.coordinate.longitude];
+                NSString* lat = [NSString stringWithFormat:@"%.2f", location.coordinate.latitude];
+                NSString* lon = [NSString stringWithFormat:@"%.2f", location.coordinate.longitude];
                 NSString *accuracy = [NSString stringWithFormat:@"%d", (int)round(location.horizontalAccuracy)];
 
                 self.adRequestModel.requestParameters[HyBidRequestParameter.lat] = lat;
@@ -249,6 +248,8 @@
     self.adRequestModel.requestParameters[HyBidRequestParameter.clickbrowser] = @"1";
     if(![adSize isEqualTo:HyBidAdSize.SIZE_NATIVE]) {
         self.adRequestModel.requestParameters[HyBidRequestParameter.topframe] = @"1";
+        // Removed the outdated geofetch logic and replaced it with hardcoded values. Set the value to 1 for all types except 'native' to align with the new requirements.
+        self.adRequestModel.requestParameters[HyBidRequestParameter.geoFetch] = @"1";
     }
     
     NSString* darkMode = [HyBidSettings sharedInstance].isDarkModeEnabled;
@@ -258,7 +259,7 @@
     
     if (adSize && ![adSize isEqualTo:HyBidAdSize.SIZE_NATIVE]) {
         self.adRequestModel.requestParameters[HyBidRequestParameter.mimes] = @"text/html,text/javascript";
-        self.adRequestModel.requestParameters[HyBidRequestParameter.videomimes] = @"video/mp4,video/webm";
+        self.adRequestModel.requestParameters[HyBidRequestParameter.videomimes] = @"video/mp4,video/3gpp,video/3gpp2,video/quicktime,video/x-m4v";
         self.adRequestModel.requestParameters[HyBidRequestParameter.boxingallowed] = @"0"; // No boxing
         self.adRequestModel.requestParameters[HyBidRequestParameter.linearity] = @"1"; // Linear
         self.adRequestModel.requestParameters[HyBidRequestParameter.playbackend] = @"1"; // Video finish or user action
@@ -273,6 +274,8 @@
             self.adRequestModel.requestParameters[HyBidRequestParameter.placement] = HyBidImpressionConstants.VIDEO_PLACEMENT_TYPE_INTERSTITIAL;
             self.adRequestModel.requestParameters[HyBidRequestParameter.placementSubtype] = HyBidImpressionConstants.VIDEO_PLACEMENT_SUBTYPE_INTERSTITIAL;
             self.adRequestModel.requestParameters[HyBidRequestParameter.playbackmethod] = [NSString stringWithFormat:@"%@,%@", HyBidImpressionConstants.VIDEO_PLAYBACK_METHOD_PAGE_LOAD_SOUND_ON, HyBidImpressionConstants.VIDEO_PLAYBACK_METHOD_PAGE_LOAD_SOUND_OFF];
+            self.adRequestModel.requestParameters[HyBidRequestParameter.width] = [@(HyBidAdSize.SIZE_320x480.width) stringValue];
+            self.adRequestModel.requestParameters[HyBidRequestParameter.height] = [@(HyBidAdSize.SIZE_320x480.height) stringValue];
         } else {
             self.adRequestModel.requestParameters[HyBidRequestParameter.interstitial] = @"0";
             self.adRequestModel.requestParameters[HyBidRequestParameter.pos] = HyBidImpressionConstants.PLACEMENT_POSITION_UNKNOWN;
@@ -336,6 +339,15 @@
     if (![newMetaFields containsObject:PNLiteMeta.creativeId]) {
         [newMetaFields addObject:PNLiteMeta.creativeId];
     }
+    
+    if (![newMetaFields containsObject:PNLiteMeta.bundleId]) {
+        [newMetaFields addObject:PNLiteMeta.bundleId];
+    }
+    
+    if (![newMetaFields containsObject:PNLiteMeta.adExperience]) {
+        [newMetaFields addObject:PNLiteMeta.adExperience];
+    }
+    
     adRequestModel.requestParameters[HyBidRequestParameter.metaField] = [newMetaFields componentsJoinedByString:@","];
 }
 

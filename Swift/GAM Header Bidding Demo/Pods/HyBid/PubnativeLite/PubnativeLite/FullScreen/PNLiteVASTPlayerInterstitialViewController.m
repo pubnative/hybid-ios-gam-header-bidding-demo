@@ -26,6 +26,14 @@
 #import "HyBidVideoAdCacheItem.h"
 #import "HyBidSKAdNetworkParameter.h"
 
+#if __has_include(<HyBid/HyBid-Swift.h>)
+    #import <UIKit/UIKit.h>
+    #import <HyBid/HyBid-Swift.h>
+#else
+    #import <UIKit/UIKit.h>
+    #import "HyBid-Swift.h"
+#endif
+
 @interface PNLiteVASTPlayerInterstitialViewController () <PNLiteVASTPlayerViewControllerDelegate>
 
 @property (weak, nonatomic) IBOutlet UIView *playerContainer;
@@ -74,8 +82,10 @@
     [self.player stop];
 }
 
-- (void)loadFullScreenPlayerWithPresenter:(HyBidInterstitialPresenter *)interstitialPresenter withAd:(HyBidAd *)ad withSkipOffset:(NSInteger)skipOffset {
+- (void)loadFullScreenPlayerWithPresenter:(HyBidInterstitialPresenter *)interstitialPresenter withAd:(HyBidAd *)ad withSkipOffset:(HyBidSkipOffset *)skipOffset {
     self.presenter = interstitialPresenter;
+    self.presenter.customCTADelegate = self.player.customCTADelegate;
+    self.presenter.skoverlayDelegate = self.player.skoverlayDelegate;
     self.adModel = ad;
     self.player = [[PNLiteVASTPlayerViewController alloc] initPlayerWithAdModel:self.adModel withAdFormat:HyBidAdFormatInterstitial];
     self.player.delegate = self;
@@ -102,7 +112,9 @@
     self.player = vastPlayer;
     self.player.view.frame = self.playerContainer.bounds;
     [self.playerContainer addSubview:self.player.view];
-    [self.presenter.delegate interstitialPresenterDidLoad:self.presenter];
+    self.presenter.customCTADelegate = self.player.customCTADelegate;
+    self.presenter.skoverlayDelegate = self.player.skoverlayDelegate;
+    [self.presenter.delegate interstitialPresenterDidLoad:self.presenter viewController: self];
 }
 
 - (void)vastPlayer:(PNLiteVASTPlayerViewController *)vastPlayer didFailLoadingWithError:(NSError *)error {
@@ -129,6 +141,14 @@
     [self.presenter.delegate interstitialPresenterDidDisappear:self.presenter];
 }
 
+- (void)vastPlayerDidShowSKOverlayWithClickType:(HyBidSKOverlayAutomaticCLickType)clickType {
+    [self.presenter.delegate interstitialPresenterDidSKOverlayAutomaticClick:self.presenter clickType:clickType];
+}
+
+- (void)vastPlayerDidShowStorekitWithClickType:(HyBidStorekitAutomaticClickType)clickType {
+    [self.presenter.delegate interstitialPresenterDidStorekitAutomaticClick:self.presenter clickType:clickType];
+}
+
 - (void)vastPlayerDidClose:(PNLiteVASTPlayerViewController *)vastPlayer {
     [self.presenter hideFromViewController:self];
     [self.presenter.delegate interstitialPresenterDidDismiss:self.presenter];
@@ -138,14 +158,43 @@
     [self.presenter.delegate interstitialPresenterDidAppear:self.presenter];
 }
 
-- (void)vastPlayerWillShowEndCard:(PNLiteVASTPlayerViewController *)vastPlayer {
+- (void)vastPlayerWillShowEndCard:(PNLiteVASTPlayerViewController *)vastPlayer
+                  isCustomEndCard:(BOOL)isCustomEndCard
+                skoverlayDelegate:(id<HyBidSKOverlayDelegate>)skoverlayDelegate
+                customCTADelegate:(id<HyBidCustomCTAViewDelegate>)customCTADelegate {
+    if (self.presenter.delegate && [self.presenter.delegate respondsToSelector:@selector(interstitialPresenterWillPresentEndCard:skoverlayDelegate:customCTADelegate:)]) {
+        [self.presenter.delegate interstitialPresenterWillPresentEndCard:self.presenter skoverlayDelegate:skoverlayDelegate customCTADelegate:customCTADelegate];
+    }
+    
     self.skAdModel = self.adModel.isUsingOpenRTB ? self.adModel.getOpenRTBSkAdNetworkModel : self.adModel.getSkAdNetworkModel;
     if ([self.skAdModel.productParameters objectForKey:HyBidSKAdNetworkParameter.endcardDelay] != [NSNull null] && [self.skAdModel.productParameters objectForKey:HyBidSKAdNetworkParameter.endcardDelay] && [[self.skAdModel.productParameters objectForKey:HyBidSKAdNetworkParameter.endcardDelay] intValue] == -1) {
         if (self.presenter.delegate && [self.presenter.delegate respondsToSelector:@selector(interstitialPresenterDismissesSKOverlay:)]) {
             [self.presenter.delegate interstitialPresenterDismissesSKOverlay:self.presenter];
         }
     } else {
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"VASTEndCardWillShow" object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"VASTEndCardWillShow" 
+                                                            object:[NSNumber numberWithBool:isCustomEndCard]];
+    }
+}
+
+- (void)vastPlayerDidShowEndCard:(PNLiteVASTPlayerViewController *)vastPlayer endcard:(HyBidVASTEndCard *)endcard {
+    if (self.presenter.delegate && [self.presenter.delegate respondsToSelector:@selector(interstitialPresenterDismissesCustomCTA:)] && endcard.isCustomEndCard) {
+        [self.presenter.delegate interstitialPresenterDismissesCustomCTA:self.presenter];
+    }
+    if (self.presenter.delegate && [self.presenter.delegate respondsToSelector:@selector(interstitialPresenterDidPresentCustomEndCard:)] && endcard.isCustomEndCard) {
+        [self.presenter.delegate interstitialPresenterDidPresentCustomEndCard:self.presenter];
+    }
+}
+
+- (void)vastPlayerDidShowCustomCTA {
+    if (self.presenter.delegate && [self.presenter.delegate respondsToSelector:@selector(interstitialPresenterDidPresentCustomCTA)]) {
+        [self.presenter.delegate interstitialPresenterDidPresentCustomCTA];
+    }
+}
+
+- (void)vastPlayerDidClickCustomCTAOnEndCard:(BOOL)onEndCard {
+    if (self.presenter.delegate && [self.presenter.delegate respondsToSelector:@selector(interstitialPresenterDidClickCustomCTAOnEndCard:)]) {
+        [self.presenter.delegate interstitialPresenterDidClickCustomCTAOnEndCard:onEndCard];
     }
 }
 

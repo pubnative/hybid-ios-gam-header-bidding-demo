@@ -41,7 +41,15 @@ NSString *const PNLiteGAMAdapterKeyZoneID = @"pn_zone_id";
 + (NSString *)valueWithKey:(NSString *)key
                 fromExtras:(NSString *)extras {
     NSString *result = nil;
+    if (!extras || [extras length] == 0) {
+        return result;
+    }
+    
     NSData *jsonData = [extras dataUsingEncoding:NSUTF8StringEncoding];
+    if (!jsonData) {
+        return result;
+    }
+    
     NSError *error;
     NSMutableDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:jsonData
                                                                       options:0
@@ -53,11 +61,12 @@ NSString *const PNLiteGAMAdapterKeyZoneID = @"pn_zone_id";
     return result;
 }
 
-// v: 3.0.0-beta1
+
+// v: 3.2.0-beta5
 + (GADVersionNumber)adSDKVersion {
     GADVersionNumber version = {0};
     version.majorVersion = 3;
-    version.minorVersion = 0;
+    version.minorVersion = 2;
     version.patchVersion = 0;
     return version;
 }
@@ -65,7 +74,7 @@ NSString *const PNLiteGAMAdapterKeyZoneID = @"pn_zone_id";
 + (GADVersionNumber)adapterVersion {
     GADVersionNumber version = {0};
     version.majorVersion = 3;
-    version.minorVersion = 0;
+    version.minorVersion = 2;
     version.patchVersion = 0;
     return version;
 }

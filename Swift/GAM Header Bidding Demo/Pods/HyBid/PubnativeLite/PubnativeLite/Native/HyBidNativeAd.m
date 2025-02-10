@@ -34,6 +34,9 @@
 #import "HyBid.h"
 #import "HyBidSKAdNetworkParameter.h"
 #import "HyBidCustomClickUtil.h"
+#import "HyBidSKAdNetworkViewController.h"
+#import "HyBidStoreKitUtils.h"
+#import "PNLiteData.h"
 
 #if __has_include(<HyBid/HyBid-Swift.h>)
     #import <UIKit/UIKit.h>
@@ -50,7 +53,7 @@
 NSString * const PNLiteNativeAdBeaconImpression = @"impression";
 NSString * const PNLiteNativeAdBeaconClick = @"click";
 
-@interface HyBidNativeAd () <PNLiteImpressionTrackerDelegate, HyBidContentInfoViewDelegate, HyBidURLDrillerDelegate>
+@interface HyBidNativeAd () <PNLiteImpressionTrackerDelegate, HyBidContentInfoViewDelegate, HyBidURLDrillerDelegate, SKStoreProductViewControllerDelegate, HyBidInternalWebBrowserDelegate>
 
 @property (nonatomic, strong) PNLiteImpressionTracker *impressionTracker;
 @property (nonatomic, strong) NSDictionary *trackingExtras;
@@ -283,10 +286,12 @@ NSString * const PNLiteNativeAdBeaconClick = @"click";
 }
 
 - (void)reportEvent:(NSString *)eventType withProperties:(NSMutableDictionary *)properties {
-    HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc] initWith:eventType
-                                                                       adFormat:HyBidReportingAdFormat.NATIVE
-                                                                     properties:[NSDictionary dictionaryWithDictionary:properties]];
-    [[HyBid reportingManager] reportEventFor:reportingEvent];
+    if ([HyBidSDKConfig sharedConfig].reporting) {
+        HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc] initWith:eventType
+                                                                           adFormat:HyBidReportingAdFormat.NATIVE
+                                                                         properties:[NSDictionary dictionaryWithDictionary:properties]];
+        [[HyBid reportingManager] reportEventFor:reportingEvent];
+    }
 }
 #pragma mark Tracking & Clicking
 
@@ -318,10 +323,11 @@ NSString * const PNLiteNativeAdBeaconClick = @"click";
         }
         [[HyBidSessionManager sharedInstance] sessionDurationWithZoneID:self.ad.zoneID];
         
-        if(self.sessionReportingProperties){
+        if(self.sessionReportingProperties && [HyBidSDKConfig sharedConfig].reporting){
             [self addSessionReportingProperties:self.sessionReportingProperties];
             [self reportEvent:HyBidReportingEventType.SESSION_REPORT_INFO withProperties:self.sessionReportingProperties];
         }
+        
         [self.impressionTracker addView:view];
         
         #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 140500
@@ -383,67 +389,38 @@ NSString * const PNLiteNativeAdBeaconClick = @"click";
         
         NSString *customUrl = [HyBidCustomClickUtil extractPNClickUrl:self.clickUrl];
         if (customUrl != nil) {
-            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:customUrl] options:@{} completionHandler:nil];
+            [self openBrowser:customUrl navigationType:HyBidWebBrowserNavigationExternalValue];
         } else if (skAdNetworkModel) {
             NSMutableDictionary* productParams = [[skAdNetworkModel getStoreKitParameters] mutableCopy];
             
-            [self insertStoreKitFidelityIntoDictionaryIfNeeded:productParams];
+            [HyBidStoreKitUtils insertFidelitiesIntoDictionaryIfNeeded:productParams];
             
             if ([productParams count] > 0 && [skAdNetworkModel isSKAdNetworkIDVisible:productParams]) {
                 [[HyBidURLDriller alloc] startDrillWithURLString:self.clickUrl delegate:self];
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    [productParams removeObjectForKey:HyBidSKAdNetworkParameter.fidelityType];
-                    
-                    HyBidSKAdNetworkViewController *skAdnetworkViewController = [[HyBidSKAdNetworkViewController alloc] initWithProductParameters:productParams];
-                    
-                    [[UIApplication sharedApplication].topViewController presentViewController:skAdnetworkViewController animated:true completion:nil];
+                    HyBidSKAdNetworkViewController *skAdnetworkViewController = [[HyBidSKAdNetworkViewController alloc] initWithProductParameters: [HyBidStoreKitUtils cleanUpProductParams:productParams] delegate: self];
+                    [skAdnetworkViewController presentSKStoreProductViewController:^(BOOL success) {
+                        
+                    }];
                 });
             } else {
-                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:self.clickUrl] options:@{} completionHandler:nil];
+                [self openBrowser:self.clickUrl navigationType:self.ad.navigationMode];
             }
         } else {
-            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:self.clickUrl] options:@{} completionHandler:nil];
+            [self openBrowser:self.clickUrl navigationType:self.ad.navigationMode];
         }
     }
 }
 
-- (NSMutableDictionary *)insertStoreKitFidelityIntoDictionaryIfNeeded:(NSMutableDictionary *)dictionary
-{
-    double skanVersion = [dictionary[@"adNetworkPayloadVersion"] doubleValue];
-    if ([[HyBidSettings sharedInstance] supportMultipleFidelities] && skanVersion >= 2.2 && [dictionary[HyBidSKAdNetworkParameter.fidelities] count] > 0) {
-        NSArray<NSData *> *fidelitiesDataArray = dictionary[HyBidSKAdNetworkParameter.fidelities];
-        
-        if ([fidelitiesDataArray count] > 0) {
-            for (NSData *fidelity in fidelitiesDataArray) {
-                SKANObject skanObject;
-                [fidelity getBytes:&skanObject length:sizeof(skanObject)];
-                
-                if (skanObject.fidelity == 1) { // As we handle tap event
-                    if (@available(iOS 11.3, *)) {
-                        [dictionary setObject:[NSString stringWithUTF8String:skanObject.timestamp] forKey:SKStoreProductParameterAdNetworkTimestamp];
-                        
-                        NSString *nonce = [NSString stringWithUTF8String:skanObject.nonce];
-                        [dictionary setObject:[[NSUUID alloc] initWithUUIDString:nonce] forKey:SKStoreProductParameterAdNetworkNonce];
-                    }
-                    
-                    if (@available(iOS 13.0, *)) {
-                        NSString *signature = [NSString stringWithUTF8String:skanObject.signature];
-                        
-                        [dictionary setObject:signature forKey:SKStoreProductParameterAdNetworkAttributionSignature];
-                        
-                        NSString *fidelity = [NSString stringWithFormat:@"%d", skanObject.fidelity];
-                        [dictionary setObject:fidelity forKey:HyBidSKAdNetworkParameter.fidelityType];
-                    }
-                    
-                    dictionary[HyBidSKAdNetworkParameter.fidelities] = nil;
-                    
-                    break; // Currently we support only 1 fidelity for each kind
-                }
-            }
-        }
-    }
+- (void)openBrowser:(NSString*)url navigationType:(NSString *)navigationType {
     
-    return dictionary;
+    HyBidWebBrowserNavigation navigation = [HyBidInternalWebBrowserNavigationController.shared webBrowserNavigationBehaviourFromString: navigationType];
+    
+    if (navigation == HyBidWebBrowserNavigationInternal) {
+        [HyBidInternalWebBrowserNavigationController.shared navigateToURL:url delegate:self];
+    } else {
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:url] options:@{} completionHandler:nil];
+    }
 }
 
 #pragma Confirm Beacons
@@ -458,6 +435,11 @@ NSString * const PNLiteNativeAdBeaconClick = @"click";
                 if (beacon.url && beacon.url.length > 0) {
                     NSURL *beaconUrl = [NSURL URLWithString:beacon.url];
                     NSURL *injectedUrl = [self injectExtrasWithUrl:beaconUrl];
+                    HyBidReportingBeacon *reportingBeacon = [self beaconReportObjectWith:beacon.type
+                                                                                 content:@{PNLiteData.url : beacon.url}];
+                    if ([HyBidSDKConfig sharedConfig].reporting && reportingBeacon) {
+                        [[HyBid reportingManager] reportBeaconFor:reportingBeacon];
+                    }
                     [PNLiteTrackingManager trackWithURL:injectedUrl withType:type forAd: self.ad];
                 } else if (beaconJs && beaconJs.length > 0) {
                     __block NSString *beaconJsBlock = [beacon stringFieldWithKey:@"js"];
@@ -472,7 +454,14 @@ NSString * const PNLiteNativeAdBeaconClick = @"click";
                         WKWebView *webView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:wkWebConfig];
                         webView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
 //                        [webView evaluateJavaScript:beaconJsBlock completionHandler:nil];
-                        [webView evaluateJavaScript:beaconJsBlock completionHandler:^(id result, NSError *error) {}];
+                        [webView evaluateJavaScript:beaconJsBlock completionHandler:^(id result, NSError *error) {
+                            if (!error && result) {
+                                HyBidReportingBeacon *reportingBeacon = [self beaconReportObjectWith:beacon.type content:@{PNLiteData.js : beacon.js}];
+                                if ([HyBidSDKConfig sharedConfig].reporting && reportingBeacon) {
+                                    [[HyBid reportingManager] reportBeaconFor:reportingBeacon];
+                                }
+                            }
+                        }];
 
                     });
                 }
@@ -497,6 +486,22 @@ NSString * const PNLiteNativeAdBeaconClick = @"click";
         result = urlComponents.URL;
     }
     return result;
+}
+
+- (HyBidReportingBeacon *)beaconReportObjectWith:(NSString *)beaconType content:(NSDictionary *)content {
+    
+    NSArray<NSString *> *beaconsKeys = @[PNLiteNativeAdBeaconImpression, PNLiteNativeAdBeaconClick];
+
+    if (![beaconsKeys containsObject:beaconType]) { return nil; }
+    if ([beaconType isEqualToString:PNLiteNativeAdBeaconImpression]) { beaconType = HyBidReportingBeaconType.IMPRESSION; }
+    if ([beaconType isEqualToString:PNLiteNativeAdBeaconClick]) { beaconType = HyBidReportingBeaconType.CLICK; }
+    
+    NSMutableDictionary* beaconProperties = [NSMutableDictionary new];
+    [beaconProperties setObject: beaconType forKey: @"type"];
+    [beaconProperties setObject: content forKey: @"data"];
+    
+    HyBidReportingBeacon *reportingBeacon = [[HyBidReportingBeacon alloc] initWith:beaconType properties:beaconProperties];
+    return reportingBeacon;
 }
 
 #pragma mark Ad Rendering
@@ -684,6 +689,15 @@ NSString * const PNLiteNativeAdBeaconClick = @"click";
 - (void)invokeDidClick {
     if (self.delegate && [self.delegate respondsToSelector:@selector(nativeAdDidClick:)]) {
         [self.delegate nativeAdDidClick:self];
+    }
+}
+
+#pragma mark SKStoreProductViewControllerDelegate
+
+- (void)productViewControllerDidFinish:(SKStoreProductViewController *)viewController {
+    if ([HyBidSDKConfig sharedConfig].reporting) {
+        HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.STOREKIT_PRODUCT_VIEW_DISMISS adFormat:HyBidReportingAdFormat.NATIVE properties:nil];
+        [[HyBid reportingManager] reportEventFor:reportingEvent];
     }
 }
 

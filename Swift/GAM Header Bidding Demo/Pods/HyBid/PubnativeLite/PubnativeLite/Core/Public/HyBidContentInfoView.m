@@ -90,8 +90,7 @@ CGFloat const HyBidIconMaximumHeight = 30.0f;
         self.textView.translatesAutoresizingMaskIntoConstraints = NO;
         [self.textView setNumberOfLines: 1];
                 
-        self.iconView = [[UIImageView alloc] init];
-        [self.iconView setFrame: self.frame];
+        self.iconView = [[UIImageView alloc] initWithFrame:self.frame];
         [self.iconView setContentMode:UIViewContentModeScaleAspectFit];
         self.iconView.translatesAutoresizingMaskIntoConstraints = NO;
         
@@ -133,8 +132,10 @@ CGFloat const HyBidIconMaximumHeight = 30.0f;
             if (!error) {
                 completionBlock(YES, data);
             } else{
-                HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.ERROR errorMessage: error.localizedDescription properties:nil];
-                [[HyBid reportingManager] reportEventFor:reportingEvent];
+                if ([HyBidSDKConfig sharedConfig].reporting) {
+                    HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.ERROR errorMessage: error.localizedDescription properties:nil];
+                    [[HyBid reportingManager] reportEventFor:reportingEvent];
+                }
                 completionBlock(NO, nil);
             }
         }];
@@ -193,11 +194,17 @@ CGFloat const HyBidIconMaximumHeight = 30.0f;
 
     // ContentInfo: Hardcoding Accessibility ID (xPosition to left and yPosition to bottom)
     NSString* positionString = @"bottom left";
+    
+    NSString* accessibilityLabelTextView = @"isLearnAboutAdPresent";
+    NSString* accessibilityLabel = @"contentInfoIconView";
+    if (self.isCustom) {
+        accessibilityLabel = @"Custom-contentInfoIconView";
+    }
     [self.iconView setIsAccessibilityElement:YES];
-    [self.iconView setAccessibilityLabel:[NSString stringWithFormat:@"contentInfoIconView - %@", positionString]];
+    [self.iconView setAccessibilityLabel:[NSString stringWithFormat:@"%@ - %@", accessibilityLabel, positionString]];
     
     [self.textView setIsAccessibilityElement:YES];
-    [self.textView setAccessibilityLabel:[NSString stringWithFormat:@"contentInfoTextView - %@", positionString]];
+    [self.textView setAccessibilityLabel:[NSString stringWithFormat:@"%@ - %@", accessibilityLabelTextView, positionString]];
 
     dispatch_async(dispatch_get_main_queue(), ^{
         if (self) {
@@ -218,7 +225,9 @@ CGFloat const HyBidIconMaximumHeight = 30.0f;
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [self.iconView setImage:self.iconImage];
                     });
-                    self.link = @"https://pubnative.net/content-info";
+                    if (self.link == nil || self.link.length == 0) {
+                        self.link = @"https://pubnative.net/content-info";
+                    }
                 }
                 self.openSize = self.iconView.frame.size.width + self.textView.frame.size.width;
                 self.hidden = NO;
@@ -450,9 +459,9 @@ CGFloat const HyBidIconMaximumHeight = 30.0f;
         if(self.superview){
             self.superview.frame = CGRectMake(self.superview.frame.origin.x - self.openSize, self.superview.frame.origin.y, self.openSize, self.superview.frame.size.height);
             if (@available(iOS 11.0, *)) {
-                [self.trailingAnchor constraintEqualToAnchor:self.superview.safeAreaLayoutGuide.trailingAnchor].active = YES;
+                [[self.trailingAnchor constraintEqualToAnchor:self.superview.safeAreaLayoutGuide.trailingAnchor] setActive: YES];
             } else {
-                [self.trailingAnchor constraintEqualToAnchor:self.superview.trailingAnchor].active = YES;
+                [[self.trailingAnchor constraintEqualToAnchor:self.superview.trailingAnchor] setActive: YES];
             }
         }
         
@@ -501,7 +510,7 @@ CGFloat const HyBidIconMaximumHeight = 30.0f;
         if(filteredArray.count > 0){
               [self.superview removeConstraints: filteredArray];
         }
-        [self.superview.widthAnchor constraintGreaterThanOrEqualToConstant: self.frame.size.width].active = YES;
+        [[self.superview.widthAnchor constraintGreaterThanOrEqualToConstant: self.frame.size.width] setActive: YES];
     }
 }
 

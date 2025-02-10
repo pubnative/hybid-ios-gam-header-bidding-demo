@@ -20,6 +20,13 @@
 //  THE SOFTWARE.
 //
 
+#if __has_include(<HyBid/HyBid-Swift.h>)
+    #import <UIKit/UIKit.h>
+    #import <HyBid/HyBid-Swift.h>
+#else
+    #import <UIKit/UIKit.h>
+    #import "HyBid-Swift.h"
+#endif
 #import "HyBidAdPresenterFactory.h"
 #import "PNLiteAdPresenterDecorator.h"
 #import "HyBidAdTracker.h"
@@ -31,8 +38,20 @@
     if (!adPresenter) {
         return nil;
     }
+    NSArray *impressionBeacons = [ad beaconsDataWithType:PNLiteAdTrackerImpression];
+    NSArray *clickBeacons = [ad beaconsDataWithType:PNLiteAdTrackerClick];
     
-    HyBidAdTracker *adTracker = [[HyBidAdTracker alloc] initWithImpressionURLs:[ad beaconsDataWithType:PNLiteAdTrackerImpression] withClickURLs:[ad beaconsDataWithType:PNLiteAdTrackerClick] forAd:ad];
+    NSArray *customEndcardImpressionBeacons = [ad beaconsDataWithType:PNLiteAdCustomEndCardImpression];
+    NSArray *customEndcardClickBeacons = [ad beaconsDataWithType:PNLiteAdCustomEndCardClick];
+    
+    HyBidCustomCTATracking *customCTATracking = [[HyBidCustomCTATracking alloc] initWithAd:ad];
+    
+    HyBidAdTracker *adTracker = [[HyBidAdTracker alloc] initWithImpressionURLs:impressionBeacons
+                                               withCustomEndcardImpressionURLs:customEndcardImpressionBeacons
+                                                                 withClickURLs:clickBeacons
+                                                    withCustomEndcardClickURLs:customEndcardClickBeacons
+                                                         withCustomCTATracking:customCTATracking
+                                                                         forAd:ad];
     PNLiteAdPresenterDecorator *adPresenterDecorator = [[PNLiteAdPresenterDecorator alloc] initWithAdPresenter:adPresenter
                                                                                                  withAdTracker: adTracker
                                                                                                   withDelegate:delegate];

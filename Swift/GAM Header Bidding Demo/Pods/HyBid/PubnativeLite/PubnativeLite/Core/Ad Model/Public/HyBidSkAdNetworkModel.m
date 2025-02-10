@@ -56,9 +56,9 @@ NSString * const REQUEST_SKADNETWORK_V4 = @"4.0";
         
         NSString* skAdNetworkVersion = [self.productParameters objectForKey:HyBidSKAdNetworkParameter.version];
         
-        BOOL isSkAdNetworkHigher_v2 = [skAdNetworkVersion isEqualToString:REQUEST_SKADNETWORK_V2] || [skAdNetworkVersion isEqualToString:REQUEST_SKADNETWORK_V2_2] || [skAdNetworkVersion isEqualToString:REQUEST_SKADNETWORK_V3];
+        BOOL isSkAdNetworkHigher_v2 = [skAdNetworkVersion isEqualToString:REQUEST_SKADNETWORK_V2] || [skAdNetworkVersion isEqualToString:REQUEST_SKADNETWORK_V2_2] || [skAdNetworkVersion isEqualToString:REQUEST_SKADNETWORK_V3] || [skAdNetworkVersion isEqualToString:REQUEST_SKADNETWORK_V4];
         
-        BOOL isSkAdNetworkHigher_v2_2 = [skAdNetworkVersion isEqualToString:REQUEST_SKADNETWORK_V2_2] || [skAdNetworkVersion isEqualToString:REQUEST_SKADNETWORK_V3];
+        BOOL isSkAdNetworkHigher_v2_2 = [skAdNetworkVersion isEqualToString:REQUEST_SKADNETWORK_V2_2] || [skAdNetworkVersion isEqualToString:REQUEST_SKADNETWORK_V3] || [skAdNetworkVersion isEqualToString:REQUEST_SKADNETWORK_V4];
         
         BOOL isSkAdNetworkHigher_v4_0 = [skAdNetworkVersion isEqualToString:REQUEST_SKADNETWORK_V4];
         
@@ -71,8 +71,8 @@ NSString * const REQUEST_SKADNETWORK_V4 = @"4.0";
             // SkAdNetwork v4.0
             if (isSkAdNetworkHigher_v4_0) {
                 if (@available(iOS 16.1, *)) {
-                    if ([self.productParameters objectForKey:HyBidSKAdNetworkParameter.signature] != nil) {
-                        [storeKitParameters setObject:[self.productParameters objectForKey:HyBidSKAdNetworkParameter.sourceIdentifier] forKey:HyBidSKAdNetworkParameter.sourceIdentifier];
+                    if ([self.productParameters objectForKey:HyBidSKAdNetworkParameter.sourceIdentifier] != nil) {
+                        [storeKitParameters setObject:[self.productParameters objectForKey:HyBidSKAdNetworkParameter.sourceIdentifier] forKey:SKStoreProductParameterAdNetworkSourceIdentifier];
                     }
                 }
             } else {
@@ -195,33 +195,45 @@ NSString * const REQUEST_SKADNETWORK_V4 = @"4.0";
     
     if (@available(iOS 11.3, *)) {
         BOOL areBasicParametersValid = [self checkBasicParameters:dict supportMultipleFidelities:supportsMultipleFidelities];
-        if (!areBasicParametersValid) return NO;
+        if (!areBasicParametersValid) {
+            return NO;
+        }
     }
     
     if (@available(iOS 14, *)) {
         if (isSkAdNetwork_v2_0) {
-            return [self checkV2Parameters:dict];
+            if(![self checkV2Parameters:dict]) {
+                return NO;
+            }
         }
         if (isSkAdNetwork_v2_2_or_v3_0) {
-            return [self checkV2Parameters:dict] && [self checkV2_2_Parameters:dict supportMultipleFidelities:supportsMultipleFidelities];
+            if(![self checkV2Parameters:dict] || ![self checkV2_2_Parameters:dict supportMultipleFidelities:supportsMultipleFidelities]) {
+                return NO;
+            }
         }
     }
-    
+        
     if (isSkAdNetwork_v4_0) {
         if (@available(iOS 16.1, *)) {
-            return [self checkV2Parameters:dict] && [self checkV2_2_Parameters:dict supportMultipleFidelities:supportsMultipleFidelities] && [self checkV4_0_Parameters:dict];
+            if(![self checkV2Parameters:dict] || ![self checkV2_2_Parameters:dict supportMultipleFidelities:supportsMultipleFidelities] || ![self checkV4_0_Parameters:dict]) {
+            return NO;
+            }
         } else {
+            return NO;
+        }
+    } else {
+        NSString *campaignID = [NSString stringWithFormat:@"%@", dict[HyBidSKAdNetworkParameter.campaign]];
+        if(!(dict[HyBidSKAdNetworkParameter.campaign] && [campaignID length] > 0)) {
             return NO;
         }
     }
 
-    return NO;
+    return YES;
 }
 
 - (BOOL)checkBasicParameters:(NSDictionary *)dict supportMultipleFidelities:(BOOL)supportsMultipleFidelities {
     BOOL isValid = NO;
     
-    NSString *campaignID = [NSString stringWithFormat:@"%@", dict[HyBidSKAdNetworkParameter.campaign]];
     NSString *timestamp = [NSString stringWithFormat:@"%@", dict[HyBidSKAdNetworkParameter.timestamp]];
     NSString *nonce = [NSString stringWithFormat:@"%@", dict[HyBidSKAdNetworkParameter.nonce]];
     NSString *itunesitem;
@@ -231,13 +243,11 @@ NSString * const REQUEST_SKADNETWORK_V4 = @"4.0";
     
     if (supportsMultipleFidelities) {
         isValid = itunesitem != nil && [itunesitem length] > 0 &&
-                  dict[HyBidSKAdNetworkParameter.network] && [dict[HyBidSKAdNetworkParameter.network] length] > 0 &&
-                  dict[HyBidSKAdNetworkParameter.campaign] && [campaignID length] > 0;
+        dict[HyBidSKAdNetworkParameter.network] && [dict[HyBidSKAdNetworkParameter.network] length] > 0;
     } else {
         isValid = dict[HyBidSKAdNetworkParameter.signature] != nil && [dict[HyBidSKAdNetworkParameter.signature] length] > 0 &&
                   itunesitem != nil && [itunesitem length] > 0 &&
                   dict[HyBidSKAdNetworkParameter.network] && [dict[HyBidSKAdNetworkParameter.network] length] > 0 &&
-                  dict[HyBidSKAdNetworkParameter.campaign] && [campaignID length] > 0 &&
                   dict[HyBidSKAdNetworkParameter.timestamp] && [timestamp length] > 0 &&
                   dict[HyBidSKAdNetworkParameter.nonce] && [nonce length] > 0;
     }
@@ -277,7 +287,8 @@ NSString * const REQUEST_SKADNETWORK_V4 = @"4.0";
 }
 
 - (BOOL)checkV4_0_Parameters:(NSDictionary *)dict {
-    return dict[HyBidSKAdNetworkParameter.sourceIdentifier] != nil;
+    BOOL isValid = [dict[HyBidSKAdNetworkParameter.sourceIdentifier] length] > 0 && dict[HyBidSKAdNetworkParameter.sourceIdentifier] != nil;
+    return isValid;
 }
 
 - (BOOL)isSKAdNetworkIDVisible:(NSDictionary*) productParams{
@@ -289,8 +300,9 @@ NSString * const REQUEST_SKADNETWORK_V4 = @"4.0";
     }
 
    for (NSDictionary* skAdNetworkID in networkItems) {
-       if ([[NSString stringWithFormat:@"%@",skAdNetworkID[@"SKAdNetworkIdentifier"]] isEqual:
-            [NSString stringWithFormat:@"%@",productParams[@"adNetworkId"]]]) {
+       NSString *skAdNetworkIdentifier = [[NSString stringWithFormat:@"%@",skAdNetworkID[@"SKAdNetworkIdentifier"]] lowercaseString];
+       NSString *adNetworkId = [[NSString stringWithFormat:@"%@",productParams[@"adNetworkId"]] lowercaseString];
+       if ([skAdNetworkIdentifier isEqualToString: adNetworkId]) {
            return YES;
        }
    }

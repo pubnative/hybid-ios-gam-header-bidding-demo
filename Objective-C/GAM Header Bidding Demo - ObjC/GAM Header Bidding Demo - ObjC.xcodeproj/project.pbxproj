@@ -40,7 +40,7 @@
 		34E9441D27FC471F0080C2B5 /* InterstitialViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InterstitialViewController.h; sourceTree = "<group>"; };
 		34E9441E27FC471F0080C2B5 /* InterstitialViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InterstitialViewController.m; sourceTree = "<group>"; };
 		37DD6751FB572D3FEC4473A3 /* Pods-GAM Header Bidding Demo - ObjC.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GAM Header Bidding Demo - ObjC.debug.xcconfig"; path = "Target Support Files/Pods-GAM Header Bidding Demo - ObjC/Pods-GAM Header Bidding Demo - ObjC.debug.xcconfig"; sourceTree = "<group>"; };
-		86B069B21C1E7C49DCE5EAEB /* Pods_GAM_Header_Bidding_Demo___ObjC.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = "Pods_GAM_Header_Bidding_Demo___ObjC.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		86B069B21C1E7C49DCE5EAEB /* Pods_GAM_Header_Bidding_Demo___ObjC.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GAM_Header_Bidding_Demo___ObjC.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -141,6 +141,7 @@
 				34E943F427FC34200080C2B5 /* Frameworks */,
 				34E943F527FC34200080C2B5 /* Resources */,
 				820BE5A178472EC47A80E04A /* [CP] Embed Pods Frameworks */,
+				9F28B2F2F2890193FDA04C01 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -213,6 +214,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-GAM Header Bidding Demo - ObjC/Pods-GAM Header Bidding Demo - ObjC-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		9F28B2F2F2890193FDA04C01 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-GAM Header Bidding Demo - ObjC/Pods-GAM Header Bidding Demo - ObjC-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-GAM Header Bidding Demo - ObjC/Pods-GAM Header Bidding Demo - ObjC-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-GAM Header Bidding Demo - ObjC/Pods-GAM Header Bidding Demo - ObjC-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		C56319336EE6DAC33916BC96 /* [CP] Check Pods Manifest.lock */ = {

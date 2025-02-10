@@ -22,6 +22,8 @@
 
 #import <Foundation/Foundation.h>
 #import "HyBidAd.h"
+#import "HyBidCustomCTAViewDelegate.h"
+#import "HyBidSKOverlayDelegate.h"
 
 @class HyBidInterstitialPresenter;
 
@@ -35,11 +37,22 @@
              didFailWithError:(NSError *)error;
 
 @optional
+- (void)interstitialPresenterDidLoad:(HyBidInterstitialPresenter *)interstitialPresenter viewController:(UIViewController *)viewController;
 - (void)interstitialPresenterDidFinish:(HyBidInterstitialPresenter *)interstitialPresenter;
 - (void)interstitialPresenterDidAppear:(HyBidInterstitialPresenter *)interstitialPresenter;
 - (void)interstitialPresenterDidDisappear:(HyBidInterstitialPresenter *)interstitialPresenter;
 - (void)interstitialPresenterPresentsSKOverlay:(HyBidInterstitialPresenter *)interstitialPresenter;
 - (void)interstitialPresenterDismissesSKOverlay:(HyBidInterstitialPresenter *)interstitialPresenter;
+- (void)interstitialPresenterDismissesCustomCTA:(HyBidInterstitialPresenter *)interstitialPresenter;
+- (void)interstitialPresenterWillPresentEndCard:(HyBidInterstitialPresenter *)interstitialPresenter
+                              skoverlayDelegate:(id<HyBidSKOverlayDelegate>)skoverlayDelegate
+                              customCTADelegate:(id<HyBidCustomCTAViewDelegate>)customCTADelegate;
+- (void)interstitialPresenterDidPresentCustomEndCard:(HyBidInterstitialPresenter *)interstitialPresenter;
+- (void)interstitialPresenterDidPresentCustomCTA;
+- (void)interstitialPresenterDidClickCustomCTAOnEndCard:(BOOL)onEndCard;
+- (void)interstitialPresenterDidSKOverlayAutomaticClick:(HyBidInterstitialPresenter *)interstitialPresenter
+                                              clickType:(HyBidSKOverlayAutomaticCLickType)clickType;
+- (void)interstitialPresenterDidStorekitAutomaticClick:(HyBidInterstitialPresenter *)interstitialPresenter           clickType:(HyBidStorekitAutomaticClickType)clickType;
 
 @end
 
@@ -47,6 +60,8 @@
 
 @property (nonatomic, readonly) HyBidAd *ad;
 @property (nonatomic) NSObject <HyBidInterstitialPresenterDelegate> *delegate;
+@property (nonatomic, weak) NSObject <HyBidCustomCTAViewDelegate> *customCTADelegate;
+@property (nonatomic, weak) NSObject <HyBidSKOverlayDelegate> *skoverlayDelegate;
 
 - (void)load;
 

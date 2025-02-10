@@ -40,7 +40,7 @@
 }
 
 - (instancetype)initWithAd:(HyBidAd *)ad
-            withSkipOffset:(NSInteger)skipOffset
+            withSkipOffset:(HyBidSkipOffset *)skipOffset
          withCloseOnFinish:(BOOL)closeOnFinish {
     self = [super init];
     if (self) {
@@ -63,11 +63,16 @@
 }
 
 - (void)show {
-    [[UIApplication sharedApplication].topViewController presentViewController:self.vastViewController animated:NO completion:nil];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[UIApplication sharedApplication].topViewController presentViewController:self.vastViewController animated:NO completion:nil];
+    });
+    [[HyBidVASTEventBeaconsManager shared] reportVASTEventWithType:HyBidReportingEventType.SHOW ad:self.ad];
 }
 
 - (void)showFromViewController:(UIViewController *)viewController {
-    [viewController presentViewController:self.vastViewController animated:NO completion:nil];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [viewController presentViewController:self.vastViewController animated:NO completion:nil];
+    });
 }
 
 - (void)hideFromViewController:(UIViewController *)viewController

@@ -106,7 +106,7 @@ public class HyBidRewardedAd: NSObject {
     @objc
     public func load() {
         cleanUp()
-        UserDefaults.standard.set(false, forKey: kIsUsingOpenRTB)
+        self.rewardedAdRequest?.isUsingOpenRTB = false
         self.initialLoadTimestamp = Date().timeIntervalSince1970
         if let zoneID = self.zoneID, zoneID.count > 0 {
             self.isReady = false
@@ -120,15 +120,20 @@ public class HyBidRewardedAd: NSObject {
     @objc
     public func loadExchangeAd() {
         cleanUp()
-        UserDefaults.standard.set(true, forKey: kIsUsingOpenRTB)
         self.initialLoadTimestamp = Date().timeIntervalSince1970
         if let zoneID = self.zoneID, zoneID.count > 0 {
             self.isReady = false
+            self.rewardedAdRequest?.isUsingOpenRTB = true
             self.rewardedAdRequest?.setIntegrationType(self.isMediation ? MEDIATION : STANDALONE, withZoneID: zoneID)
             self.rewardedAdRequest?.requestAd(with: HyBidRewardedAdRequestWrapper(parent: self), withZoneID: zoneID)
         } else {
             invokeDidFailWithError(error: NSError.hyBidInvalidZoneId())
         }
+    }
+    
+    @objc
+    public func setOpenRTBAdType(adFormat: HyBidOpenRTBAdType) {
+        self.rewardedAdRequest?.openRTBAdType = adFormat
     }
     
     @objc
@@ -163,6 +168,17 @@ public class HyBidRewardedAd: NSObject {
         }
     }
     
+    @objc(prepareExchangeAdWithAdReponse:)
+    public func prepareExchangeAdWithAdReponse(adReponse: String) {
+        if adReponse.count != 0 {
+            self.cleanUp()
+            self.initialLoadTimestamp = Date().timeIntervalSince1970
+            self.processExchangeAdReponse(adReponse: adReponse)
+        } else {
+            self.invokeDidFailWithError(error: NSError.hyBidInvalidAsset())
+        }
+    }
+
     @objc(prepareAdWithAdReponse:)
     public func prepareAdWithAdReponse(adReponse: String) {
         if adReponse.count != 0 {
@@ -182,6 +198,14 @@ public class HyBidRewardedAd: NSObject {
     
     func processAdReponse(adReponse: String) {
         let rewardedAdRequest = HyBidRewardedAdRequest()
+        rewardedAdRequest.openRTBAdType = HyBidOpenRTBAdVideo
+        rewardedAdRequest.delegate = HyBidRewardedAdRequestWrapper(parent: self)
+        rewardedAdRequest.processResponse(withJSON: adReponse)
+    }
+
+        func processExchangeAdReponse(adReponse: String) {
+        let rewardedAdRequest = HyBidRewardedAdRequest()
+        rewardedAdRequest.isUsingOpenRTB = true
         rewardedAdRequest.openRTBAdType = HyBidOpenRTBAdVideo
         rewardedAdRequest.delegate = HyBidRewardedAdRequestWrapper(parent: self)
         rewardedAdRequest.processResponse(withJSON: adReponse)
@@ -236,9 +260,13 @@ public class HyBidRewardedAd: NSObject {
     func renderAd(ad: HyBidAd) {
         let rewardedPresenterFactory = HyBidRewardedPresenterFactory()
         if let skipOffset = self.htmlSkipOffset?.offset?.intValue, skipOffset >= 0 {
-            self.rewardedPresenter = rewardedPresenterFactory.createRewardedPresenter(with: ad, withHTMLSkipOffset: UInt(skipOffset), withCloseOnFinish: self.closeOnFinish, with: HyBidRewardedPresenterWrapper(parent: self))
+            if skipOffset >= HyBidSkipOffset.DEFAULT_REWARDED_HTML_MAX_SKIP_OFFSET {
+                self.rewardedPresenter = rewardedPresenterFactory.createRewardedPresenter(with: ad, withHTMLSkipOffset: UInt(HyBidSkipOffset.DEFAULT_REWARDED_HTML_MAX_SKIP_OFFSET), withCloseOnFinish: self.closeOnFinish, with: HyBidRewardedPresenterWrapper(parent: self))
+            } else {
+                self.rewardedPresenter = rewardedPresenterFactory.createRewardedPresenter(with: ad, withHTMLSkipOffset: UInt(skipOffset), withCloseOnFinish: self.closeOnFinish, with: HyBidRewardedPresenterWrapper(parent: self))
+            }
         } else {
-            let skipOffset = HyBidSkipOffset(offset: NSNumber(value: HyBidSkipOffset.DEFAULT_HTML_SKIP_OFFSET), isCustom: false);
+            let skipOffset = HyBidSkipOffset(offset: NSNumber(value: HyBidSkipOffset.DEFAULT_REWARDED_HTML_SKIP_OFFSET), isCustom: false);
             self.rewardedPresenter = rewardedPresenterFactory.createRewardedPresenter(with: ad, withHTMLSkipOffset: UInt(skipOffset.offset?.intValue ?? 0), withCloseOnFinish: self.closeOnFinish, with: HyBidRewardedPresenterWrapper(parent: self))
         }
         
@@ -247,71 +275,42 @@ public class HyBidRewardedAd: NSObject {
             
             self.invokeDidFailWithError(error: NSError.hyBidUnsupportedAsset())
             
-            self.renderErrorReportingProperties[Common.ERROR_MESSAGE] = NSError.hyBidUnsupportedAsset().localizedDescription
-            self.renderErrorReportingProperties[Common.ERROR_CODE] = String(format: "%ld", NSError.hyBidUnsupportedAsset().code)
-            self.renderReportingProperties.update(other: self.addCommonPropertiesToReportingDictionary())
-            self.reportEvent(EventType.RENDER_ERROR, properties: self.renderReportingProperties)
+            if HyBidSDKConfig.sharedConfig.reporting {
+                self.renderErrorReportingProperties[Common.ERROR_MESSAGE] = NSError.hyBidUnsupportedAsset().localizedDescription
+                self.renderErrorReportingProperties[Common.ERROR_CODE] = String(format: "%ld", NSError.hyBidUnsupportedAsset().code)
+                self.renderReportingProperties.update(other: HyBid.reportingManager().addCommonProperties(forAd: self.ad, withRequest: self.rewardedAdRequest))
+                self.reportEvent(EventType.RENDER_ERROR, properties: self.renderReportingProperties)
+            }
             return
         } else {
             self.rewardedPresenter?.load()
         }
     }
     
-    func addSessionReportingProperties() -> [String:Any] {
-        var sessionReportingDictionaryToAppend = [String:Any]()
-        if !HyBidSessionManager.sharedInstance.impressionCounter.isEmpty{
-            sessionReportingDictionaryToAppend[Common.IMPRESSION_SESSION_COUNT] = HyBidSessionManager.sharedInstance.impressionCounter
+    func addSessionReportingProperties() -> [String: Any] {
+        var sessionReportingDictionaryToAppend = [String: Any]()
+        let impressionCounter = HyBidSessionManager.sharedInstance.safeImpressionCounter
+        if !impressionCounter.isEmpty {
+            sessionReportingDictionaryToAppend[Common.IMPRESSION_SESSION_COUNT] = impressionCounter
         }
-        if UserDefaults.standard.object(forKey: Common.SESSION_DURATION) != nil {
-            sessionReportingDictionaryToAppend[Common.SESSION_DURATION] = UserDefaults.standard.object(forKey: Common.SESSION_DURATION)
+        if let sessionDuration = UserDefaults.standard.string(forKey: Common.SESSION_DURATION), !sessionDuration.isEmpty{
+            sessionReportingDictionaryToAppend[Common.SESSION_DURATION] = sessionDuration
         }
-        if zoneID != nil{
+        if zoneID != nil {
             sessionReportingDictionaryToAppend[Common.ZONE_ID] = zoneID
         }
-        sessionReportingDictionaryToAppend[Common.AGE_OF_APP] = HyBidSessionManager.sharedInstance.getAgeOfApp()
+        let ageOfApp = HyBidSessionManager.sharedInstance.getAgeOfApp()
+        if !ageOfApp.isEmpty {
+            sessionReportingDictionaryToAppend[Common.AGE_OF_APP] = ageOfApp
+        }
         return sessionReportingDictionaryToAppend
     }
     
-    func addCommonPropertiesToReportingDictionary() -> [String: String] {
-        var reportingDictionaryToAppend = [String: String]()
-        if let appToken = HyBidSDKConfig.sharedConfig.appToken, appToken.count > 0 {
-            reportingDictionaryToAppend[Common.APPTOKEN] = appToken
-        }
-        if let zoneID = self.zoneID, zoneID.count > 0 {
-            reportingDictionaryToAppend[Common.ZONE_ID] = zoneID
-        }
-        if let integrationType = self.rewardedAdRequest?.integrationType, let integrationTypeString = HyBidIntegrationType.integrationType(toString: integrationType), integrationTypeString.count > 0 {
-            reportingDictionaryToAppend[Common.INTEGRATION_TYPE] = integrationTypeString
-        }
-        
-        var assetGroupId: NSInteger = 0;
-        if self.ad?.isUsingOpenRTB != nil && self.ad?.isUsingOpenRTB == true {
-            assetGroupId = NSInteger(truncating: self.ad?.openRTBAssetGroupID ?? 0)
-        } else {
-            assetGroupId = NSInteger(truncating: self.ad?.assetGroupID ?? 0)
-        }
-        
-        switch UInt32(assetGroupId) {
-            case VAST_REWARDED:
-                reportingDictionaryToAppend[Common.AD_TYPE] = "VAST"
-                if let vastString = self.ad?.vast {
-                    reportingDictionaryToAppend[Common.CREATIVE] = vastString
-                }
-                break
-            default:
-                reportingDictionaryToAppend[Common.AD_TYPE] = "HTML"
-                if let htmlDataString = self.ad?.htmlData {
-                    reportingDictionaryToAppend[Common.CREATIVE] = htmlDataString
-                }
-                break
-        }
-        
-        return reportingDictionaryToAppend
-    }
-    
     func reportEvent(_ eventType: String, properties: [String: Any]) {
-        let reportingEvent = HyBidReportingEvent(with: eventType, adFormat: AdFormat.REWARDED, properties: properties)
-        HyBid.reportingManager().reportEvent(for: reportingEvent)
+        if HyBidSDKConfig.sharedConfig.reporting == true {
+            let reportingEvent = HyBidReportingEvent(with: eventType, adFormat: AdFormat.REWARDED, properties: properties)
+            HyBid.reportingManager().reportEvent(for: reportingEvent)
+        }
     }
     
     func elapsedTimeSince(_ timestamp: TimeInterval) -> TimeInterval {
@@ -319,21 +318,28 @@ public class HyBidRewardedAd: NSObject {
     }
     
     func invokeDidLoad() {
-        if let initialLoadTimestamp = self.initialLoadTimestamp, initialLoadTimestamp != -1 {
-            self.loadReportingProperties[Common.TIME_TO_LOAD] = String(format: "%f", elapsedTimeSince(initialLoadTimestamp))
+        if HyBidSDKConfig.sharedConfig.reporting {
+            if let initialLoadTimestamp = self.initialLoadTimestamp, initialLoadTimestamp != -1 {
+                self.loadReportingProperties[Common.TIME_TO_LOAD] = String(format: "%f", elapsedTimeSince(initialLoadTimestamp))
+            }
+            self.loadReportingProperties = HyBid.reportingManager().addCommonProperties(forAd: self.ad, withRequest: self.rewardedAdRequest)
+            self.reportEvent(EventType.LOAD, properties: self.loadReportingProperties)
         }
-        self.loadReportingProperties = self.addCommonPropertiesToReportingDictionary()
-        self.reportEvent(EventType.LOAD, properties: self.loadReportingProperties)
+        HyBidVASTEventBeaconsManager.shared.reportVASTEvent(type: EventType.LOAD, ad: self.ad)
         guard let delegate = self.delegate else { return }
         delegate.rewardedDidLoad()
     }
     
     func invokeDidFailWithError(error: Error) {
-        if let initialLoadTimestamp = self.initialLoadTimestamp, initialLoadTimestamp != -1 {
-            self.loadReportingProperties[Common.TIME_TO_LOAD] = String(format: "%f", elapsedTimeSince(initialLoadTimestamp))
+        if HyBidSDKConfig.sharedConfig.reporting {
+            if let initialLoadTimestamp = self.initialLoadTimestamp, initialLoadTimestamp != -1 {
+                self.loadReportingProperties[Common.TIME_TO_LOAD] = String(format: "%f", elapsedTimeSince(initialLoadTimestamp))
+            }
+            self.loadReportingProperties = HyBid.reportingManager().addCommonProperties(forAd: self.ad, withRequest: self.rewardedAdRequest)
+            self.reportEvent(EventType.LOAD_FAIL, properties: self.loadReportingProperties)
         }
-        self.loadReportingProperties = self.addCommonPropertiesToReportingDictionary()
-        self.reportEvent(EventType.LOAD_FAIL, properties: self.loadReportingProperties)
+        let error = error as NSError
+        HyBidVASTEventBeaconsManager.shared.reportVASTEvent(type: EventType.LOAD_FAIL, ad: self.ad, errorCode: error.code)
         HyBidLogger.errorLog(fromClass: String(describing: HyBidRewardedAd.self), fromMethod: #function, withMessage: error.localizedDescription)
         if let delegate = delegate {
             delegate.rewardedDidFailWithError(error)
@@ -367,7 +373,9 @@ public class HyBidRewardedAd: NSObject {
     func invokeOnReward() {
         guard let delegate = self.delegate else { return }
         delegate.onReward()
-        self.reportEvent(EventType.REWARD, properties: [:])
+        if HyBidSDKConfig.sharedConfig.reporting {
+            self.reportEvent(EventType.REWARD, properties: [:])
+        }
     }
     
     func invokeDidDismiss() {
@@ -437,15 +445,17 @@ extension HyBidRewardedAd {
     }
     
     func rewardedPresenterDidShow(_ rewardedPresenter: HyBidRewardedPresenter!) {
-        if let initialRenderTimestamp = self.initialRenderTimestamp, initialRenderTimestamp
-            != -1 {
-            self.loadReportingProperties[Common.RENDER_TIME] = String(format: "%f",
-                                                                      elapsedTimeSince(initialRenderTimestamp))
+        if HyBidSDKConfig.sharedConfig.reporting {
+            if let initialRenderTimestamp = self.initialRenderTimestamp, initialRenderTimestamp
+                != -1 {
+                self.loadReportingProperties[Common.RENDER_TIME] = String(format: "%f",
+                                                                          elapsedTimeSince(initialRenderTimestamp))
+            }
+            self.renderReportingProperties = HyBid.reportingManager().addCommonProperties(forAd: self.ad, withRequest: self.rewardedAdRequest)
+            self.sessionReportingProperties = self.addSessionReportingProperties()
+            self.reportEvent(EventType.RENDER, properties: self.renderReportingProperties)
+            self.reportEvent(EventType.SESSION_REPORT_INFO, properties: self.sessionReportingProperties)
         }
-        self.renderReportingProperties = self.addCommonPropertiesToReportingDictionary()
-        self.sessionReportingProperties = self.addSessionReportingProperties()
-        self.reportEvent(EventType.RENDER, properties: self.renderReportingProperties)
-        self.reportEvent(EventType.SESSION_REPORT_INFO, properties: self.sessionReportingProperties)
         self.invokeDidTrackImpression()
     }
     

@@ -104,9 +104,13 @@ public class HyBidInterstitialAd: NSObject {
     }
     
     @objc
+    public func setOpenRTBAdType(adFormat: HyBidOpenRTBAdType) {
+        self.interstitialAdRequest?.openRTBAdType = adFormat
+    }
+    
+    @objc
     public func load() {
         cleanUp()
-        UserDefaults.standard.set(false, forKey: kIsUsingOpenRTB)
         self.initialLoadTimestamp = Date().timeIntervalSince1970
         if let zoneID = self.zoneID, zoneID.count > 0 {
             self.isReady = false
@@ -120,10 +124,10 @@ public class HyBidInterstitialAd: NSObject {
     @objc
     public func loadExchangeAd() {
         cleanUp()
-        UserDefaults.standard.set(true, forKey: kIsUsingOpenRTB)
         self.initialLoadTimestamp = Date().timeIntervalSince1970
         if let zoneID = self.zoneID, zoneID.count > 0 {
             self.isReady = false
+            self.interstitialAdRequest?.isUsingOpenRTB = true
             self.interstitialAdRequest?.setIntegrationType(self.isMediation ? MEDIATION : STANDALONE, withZoneID: zoneID)
             
             self.interstitialAdRequest?.requestAd(with: HyBidInterstitialAdRequestWrapper(parent: self), withZoneID: zoneID)
@@ -165,6 +169,17 @@ public class HyBidInterstitialAd: NSObject {
             self.invokeDidFailWithError(error: NSError.hyBidInvalidAsset())
         }
     }
+
+    @objc(prepareExchangeAdWithAdReponse:)
+    public func prepareExchangeAdWithAdReponse(adReponse: String) {
+        if adReponse.count != 0 {
+            self.cleanUp()
+            self.initialLoadTimestamp = Date().timeIntervalSince1970
+            self.processExchangeAdReponse(adReponse: adReponse)
+        } else {
+            self.invokeDidFailWithError(error: NSError.hyBidInvalidAsset())
+        }
+    }
     
     @objc(prepareVideoTagFrom:)
     public func prepareVideoTag(from url: String) {
@@ -188,6 +203,14 @@ public class HyBidInterstitialAd: NSObject {
     
     func processAdReponse(adReponse: String) {
         let interstitialAdRequest = HyBidInterstitialAdRequest()
+        interstitialAdRequest.openRTBAdType = HyBidOpenRTBAdVideo
+        interstitialAdRequest.delegate = HyBidInterstitialAdRequestWrapper(parent: self)
+        interstitialAdRequest.processResponse(withJSON: adReponse)
+    }
+
+    func processExchangeAdReponse(adReponse: String) {
+        let interstitialAdRequest = HyBidInterstitialAdRequest()
+        interstitialAdRequest.isUsingOpenRTB = true
         interstitialAdRequest.openRTBAdType = HyBidOpenRTBAdVideo
         interstitialAdRequest.delegate = HyBidInterstitialAdRequestWrapper(parent: self)
         interstitialAdRequest.processResponse(withJSON: adReponse)
@@ -242,7 +265,7 @@ public class HyBidInterstitialAd: NSObject {
     }
     
     func renderAd(ad: HyBidAd) {
-        if let hasEndCard = self.ad?.hasEndCard, !hasEndCard, !(videoSkipOffset?.isCustom ?? false) {
+        if let hasEndCard = self.ad?.hasEndCard, !hasEndCard, !(videoSkipOffset?.isCustom ?? false), let hasCustomEndCard = self.ad?.hasCustomEndCard, !hasCustomEndCard {
             self.videoSkipOffset = HyBidSkipOffset(offset: NSNumber(value: HyBidSkipOffset.DEFAULT_SKIP_OFFSET_WITHOUT_ENDCARD), isCustom: false)
         }
         let interstitalPresenterFactory = HyBidInterstitialPresenterFactory()
@@ -252,28 +275,32 @@ public class HyBidInterstitialAd: NSObject {
         let defaultHtmlSkipOffset = HyBidSkipOffset(offset: NSNumber(value: HyBidSkipOffset.DEFAULT_HTML_SKIP_OFFSET), isCustom: false)
 
         if videoSkipOffset >= 0 && htmlSkipOffset >= 0 {
-            self.interstitialPresenter = interstitalPresenterFactory.createInterstitalPresenter(with: ad, withVideoSkipOffset: UInt(videoSkipOffset), withHTMLSkipOffset: UInt(htmlSkipOffset), withCloseOnFinish: self.closeOnFinish, with: HyBidInterstitialPresenterWrapper(parent: self))
+            if htmlSkipOffset >= HyBidSkipOffset.DEFAULT_INTERSTITIAL_HTML_MAX_SKIP_OFFSET {
+                self.interstitialPresenter = interstitalPresenterFactory.createInterstitalPresenter(with: ad, withVideoSkipOffset: self.videoSkipOffset, withHTMLSkipOffset: UInt(HyBidSkipOffset.DEFAULT_INTERSTITIAL_HTML_MAX_SKIP_OFFSET), withCloseOnFinish: self.closeOnFinish, with: HyBidInterstitialPresenterWrapper(parent: self))
+            } else {
+                self.interstitialPresenter = interstitalPresenterFactory.createInterstitalPresenter(with: ad, withVideoSkipOffset: self.videoSkipOffset, withHTMLSkipOffset: UInt(htmlSkipOffset), withCloseOnFinish: self.closeOnFinish, with: HyBidInterstitialPresenterWrapper(parent: self))
+            }
         } else if videoSkipOffset < 0 && htmlSkipOffset < 0 {
             let isEndCardOrCustomEndCard = self.ad?.hasEndCard ?? false || self.ad?.hasCustomEndCard ?? false
             let offsetValue = isEndCardOrCustomEndCard && HyBidConstants.showEndCard
                 ? HyBidSkipOffset(offset: NSNumber(value: HyBidSkipOffset.DEFAULT_VIDEO_SKIP_OFFSET), isCustom: false)
-                : HyBidSkipOffset(offset: NSNumber(value: HyBidSkipOffset.DEFAULT_SKIP_OFFSET_WITHOUT_ENDCARD), isCustom: true)
+                : HyBidSkipOffset(offset: NSNumber(value: HyBidSkipOffset.DEFAULT_SKIP_OFFSET_WITHOUT_ENDCARD), isCustom: false)
             
             
             defaultVideoSkipOffset = offsetValue
             HyBidConstants.videoSkipOffset = HyBidSkipOffset(offset: (defaultVideoSkipOffset.offset?.intValue ?? 0) as NSNumber, isCustom: false)
-            self.interstitialPresenter = interstitalPresenterFactory.createInterstitalPresenter(with: ad, withVideoSkipOffset: UInt(defaultVideoSkipOffset.offset?.intValue ?? 0), withHTMLSkipOffset: UInt(defaultHtmlSkipOffset.offset?.intValue ?? 0), withCloseOnFinish: self.closeOnFinish, with: HyBidInterstitialPresenterWrapper(parent: self))
+            self.interstitialPresenter = interstitalPresenterFactory.createInterstitalPresenter(with: ad, withVideoSkipOffset: defaultVideoSkipOffset, withHTMLSkipOffset: UInt(defaultHtmlSkipOffset.offset?.intValue ?? 0), withCloseOnFinish: self.closeOnFinish, with: HyBidInterstitialPresenterWrapper(parent: self))
         } else if htmlSkipOffset < 0 {
-            self.interstitialPresenter = interstitalPresenterFactory.createInterstitalPresenter(with: ad, withVideoSkipOffset: UInt(videoSkipOffset), withHTMLSkipOffset: UInt(defaultHtmlSkipOffset.offset?.intValue ?? 0), withCloseOnFinish: self.closeOnFinish, with: HyBidInterstitialPresenterWrapper(parent: self))
-        } else if videoSkipOffset < 0{
+            self.interstitialPresenter = interstitalPresenterFactory.createInterstitalPresenter(with: ad, withVideoSkipOffset: self.videoSkipOffset, withHTMLSkipOffset: UInt(defaultHtmlSkipOffset.offset?.intValue ?? 0), withCloseOnFinish: self.closeOnFinish, with: HyBidInterstitialPresenterWrapper(parent: self))
+        } else if videoSkipOffset < 0 {
             let isEndCardOrCustomEndCard = self.ad?.hasEndCard ?? false || self.ad?.hasCustomEndCard ?? false
             let offsetValue = isEndCardOrCustomEndCard && HyBidConstants.showEndCard
                 ? HyBidSkipOffset(offset: NSNumber(value: HyBidSkipOffset.DEFAULT_VIDEO_SKIP_OFFSET), isCustom: false)
-                : HyBidSkipOffset(offset: NSNumber(value: HyBidSkipOffset.DEFAULT_SKIP_OFFSET_WITHOUT_ENDCARD), isCustom: true)
+                : HyBidSkipOffset(offset: NSNumber(value: HyBidSkipOffset.DEFAULT_SKIP_OFFSET_WITHOUT_ENDCARD), isCustom: false)
             
             defaultVideoSkipOffset = offsetValue
             HyBidConstants.videoSkipOffset = HyBidSkipOffset(offset: (defaultVideoSkipOffset.offset?.intValue ?? 0) as NSNumber, isCustom: false)
-            self.interstitialPresenter = interstitalPresenterFactory.createInterstitalPresenter(with: ad, withVideoSkipOffset: UInt(defaultVideoSkipOffset.offset?.intValue ?? 0), withHTMLSkipOffset: UInt(htmlSkipOffset), withCloseOnFinish: self.closeOnFinish, with: HyBidInterstitialPresenterWrapper(parent: self))
+            self.interstitialPresenter = interstitalPresenterFactory.createInterstitalPresenter(with: ad, withVideoSkipOffset: defaultVideoSkipOffset, withHTMLSkipOffset: UInt(htmlSkipOffset), withCloseOnFinish: self.closeOnFinish, with: HyBidInterstitialPresenterWrapper(parent: self))
         }
         
         if (self.interstitialPresenter == nil) {
@@ -281,70 +308,45 @@ public class HyBidInterstitialAd: NSObject {
             
             self.invokeDidFailWithError(error: NSError.hyBidUnsupportedAsset())
             
-            self.renderErrorReportingProperties[Common.ERROR_MESSAGE] = NSError.hyBidUnsupportedAsset().localizedDescription
-            self.renderErrorReportingProperties[Common.ERROR_CODE] = String(format: "%ld", NSError.hyBidUnsupportedAsset().code)
-            self.renderReportingProperties.update(other: self.addCommonPropertiesToReportingDictionary())
-            self.reportEvent(EventType.RENDER_ERROR, properties: self.renderReportingProperties)
+            if HyBidSDKConfig.sharedConfig.reporting {
+                self.renderErrorReportingProperties[Common.ERROR_MESSAGE] = NSError.hyBidUnsupportedAsset().localizedDescription
+                self.renderErrorReportingProperties[Common.ERROR_CODE] = String(format: "%ld", NSError.hyBidUnsupportedAsset().code)
+                self.renderReportingProperties.update(other: HyBid.reportingManager().addCommonProperties(forAd: self.ad, withRequest: self.interstitialAdRequest))
+                self.reportEvent(EventType.RENDER_ERROR, properties: self.renderReportingProperties)
+            }
             return
         } else {
             self.interstitialPresenter?.load()
         }
     }
     
-    func addSessionReportingProperties() -> [String:Any] {
-        var sessionReportingDictionaryToAppend = [String:Any]()
-        if !HyBidSessionManager.sharedInstance.impressionCounter.isEmpty{
-            sessionReportingDictionaryToAppend[Common.IMPRESSION_SESSION_COUNT] = HyBidSessionManager.sharedInstance.impressionCounter
+    func addSessionReportingProperties() -> [String: Any] {
+        var sessionReportingDictionaryToAppend = [String: Any]()
+        let impressionCounter = HyBidSessionManager.sharedInstance.safeImpressionCounter
+        if !impressionCounter.isEmpty {
+            sessionReportingDictionaryToAppend[Common.IMPRESSION_SESSION_COUNT] = impressionCounter
         }
-        if UserDefaults.standard.object(forKey: Common.SESSION_DURATION) != nil {
-            sessionReportingDictionaryToAppend[Common.SESSION_DURATION] = UserDefaults.standard.object(forKey: Common.SESSION_DURATION)
+        if let sessionDuration = UserDefaults.standard.string(forKey: Common.SESSION_DURATION), !sessionDuration.isEmpty{
+            sessionReportingDictionaryToAppend[Common.SESSION_DURATION] = sessionDuration
         }
-        if zoneID != nil{
+        if zoneID != nil {
             sessionReportingDictionaryToAppend[Common.ZONE_ID] = zoneID
         }
-        sessionReportingDictionaryToAppend[Common.AGE_OF_APP] = HyBidSessionManager.sharedInstance.getAgeOfApp()
+        let ageOfApp = HyBidSessionManager.sharedInstance.getAgeOfApp()
+        if !ageOfApp.isEmpty {
+            sessionReportingDictionaryToAppend[Common.AGE_OF_APP] = ageOfApp
+        }
         return sessionReportingDictionaryToAppend
     }
     
-    func addCommonPropertiesToReportingDictionary() -> [String: String] {
-        var reportingDictionaryToAppend = [String: String]()
-        if let appToken = HyBidSDKConfig.sharedConfig.appToken, appToken.count > 0 {
-            reportingDictionaryToAppend[Common.APPTOKEN] = appToken
-        }
-        if let zoneID = self.zoneID, zoneID.count > 0 {
-            reportingDictionaryToAppend[Common.ZONE_ID] = zoneID
-        }
-        if let integrationType = self.interstitialAdRequest?.integrationType, let integrationTypeString = HyBidIntegrationType.integrationType(toString: integrationType), integrationTypeString.count > 0 {
-            reportingDictionaryToAppend[Common.INTEGRATION_TYPE] = integrationTypeString
-        }
-        
-        var assetGroupId: NSInteger = 0;
-        if self.ad?.isUsingOpenRTB != nil && self.ad?.isUsingOpenRTB == true {
-            assetGroupId = NSInteger(truncating: self.ad?.openRTBAssetGroupID ?? 0)
-        } else {
-            assetGroupId = NSInteger(truncating: self.ad?.assetGroupID ?? 0)
-        }
-        
-        switch UInt32(assetGroupId) {
-            case VAST_REWARDED:
-                reportingDictionaryToAppend[Common.AD_TYPE] = "VAST"
-                if let vastString = self.ad?.vast {
-                    reportingDictionaryToAppend[Common.CREATIVE] = vastString
-                }
-                break
-            default:
-                reportingDictionaryToAppend[Common.AD_TYPE] = "HTML"
-                if let htmlDataString = self.ad?.htmlData {
-                    reportingDictionaryToAppend[Common.CREATIVE] = htmlDataString
-                }
-                break
-        }
-        return reportingDictionaryToAppend
-    }
-    
     func reportEvent(_ eventType: String, properties: [String: Any]) {
-        let reportingEvent = HyBidReportingEvent(with: eventType, adFormat: AdFormat.FULLSCREEN, properties: properties)
-        HyBid.reportingManager().reportEvent(for: reportingEvent)
+        if HyBidSDKConfig.sharedConfig.reporting == true {
+            var properties = properties
+            if let ad = self.ad, let beacons = ad.beacons { properties[VASTBeacon.BEACONS] = beacons }
+            
+            let reportingEvent = HyBidReportingEvent(with: eventType, adFormat: AdFormat.FULLSCREEN, properties: properties)
+            HyBid.reportingManager().reportEvent(for: reportingEvent)
+        }
     }
     
     func elapsedTimeSince(_ timestamp: TimeInterval) -> TimeInterval {
@@ -352,23 +354,30 @@ public class HyBidInterstitialAd: NSObject {
     }
     
     func invokeDidLoad() {
-        if let initialLoadTimestamp = self.initialLoadTimestamp, initialLoadTimestamp != -1 {
-            self.loadReportingProperties[Common.TIME_TO_LOAD] = String(format: "%f", elapsedTimeSince(initialLoadTimestamp))
+        if HyBidSDKConfig.sharedConfig.reporting {
+            if let initialLoadTimestamp = self.initialLoadTimestamp, initialLoadTimestamp != -1 {
+                self.loadReportingProperties[Common.TIME_TO_LOAD] = String(format: "%f", elapsedTimeSince(initialLoadTimestamp))
+            }
+            
+            self.loadReportingProperties[Common.HAS_END_CARD] = self.ad?.hasEndCard
+            self.loadReportingProperties = HyBid.reportingManager().addCommonProperties(forAd: self.ad, withRequest: self.interstitialAdRequest)
+            self.reportEvent(EventType.LOAD, properties: self.loadReportingProperties)
         }
-        
-        self.loadReportingProperties[Common.HAS_END_CARD] = self.ad?.hasEndCard
-        self.loadReportingProperties = self.addCommonPropertiesToReportingDictionary()
-        self.reportEvent(EventType.LOAD, properties: self.loadReportingProperties)
+        HyBidVASTEventBeaconsManager.shared.reportVASTEvent(type: EventType.LOAD, ad: self.ad)
         guard let delegate = self.delegate else { return }
         delegate.interstitialDidLoad()
     }
     
     func invokeDidFailWithError(error: Error) {
-        if let initialLoadTimestamp = self.initialLoadTimestamp, initialLoadTimestamp != -1 {
-            self.loadReportingProperties[Common.TIME_TO_LOAD] = String(format: "%f", elapsedTimeSince(initialLoadTimestamp))
+        if HyBidSDKConfig.sharedConfig.reporting {
+            if let initialLoadTimestamp = self.initialLoadTimestamp, initialLoadTimestamp != -1 {
+                self.loadReportingProperties[Common.TIME_TO_LOAD] = String(format: "%f", elapsedTimeSince(initialLoadTimestamp))
+            }
+            self.loadReportingProperties = HyBid.reportingManager().addCommonProperties(forAd: self.ad, withRequest: self.interstitialAdRequest)
+            self.reportEvent(EventType.LOAD_FAIL, properties: self.loadReportingProperties)
         }
-        self.loadReportingProperties = self.addCommonPropertiesToReportingDictionary()
-        self.reportEvent(EventType.LOAD_FAIL, properties: self.loadReportingProperties)
+        let error = error as NSError
+        HyBidVASTEventBeaconsManager.shared.reportVASTEvent(type: EventType.LOAD_FAIL, ad: self.ad, errorCode: error.code)
         HyBidLogger.errorLog(fromClass: String(describing: HyBidInterstitialAd.self), fromMethod: #function, withMessage: error.localizedDescription)
         
         if let delegate = delegate {
@@ -406,14 +415,47 @@ public class HyBidInterstitialAd: NSObject {
     }
     
     func determineSkipOffsetValuesFor(_ ad: HyBidAd) {
-        if ad.interstitialHtmlSkipOffset != nil {
-            self.htmlSkipOffset = HyBidSkipOffset(offset: ad.interstitialHtmlSkipOffset, isCustom: true)
+        if isValidBundleID(ad: ad) {
+            if let skipOffset = ad.pcInterstitialHtmlSkipOffset {
+                if skipOffset.intValue < 0 {
+                    self.htmlSkipOffset = HyBidSkipOffset(offset: NSNumber(value: HyBidSkipOffset.DEFAULT_PC_INTERSTITIAL_SKIP_OFFSET), isCustom: true)
+                } else if skipOffset.intValue >= HyBidSkipOffset.DEFAULT_PC_INTERSTITIAL_MAX_SKIP_OFFSET {
+                    self.htmlSkipOffset = HyBidSkipOffset(offset: NSNumber(value: HyBidSkipOffset.DEFAULT_PC_INTERSTITIAL_MAX_SKIP_OFFSET), isCustom: true)
+                } else {
+                    self.htmlSkipOffset = HyBidSkipOffset(offset: skipOffset, isCustom: true)
+                }
+            } else {
+                self.htmlSkipOffset = HyBidSkipOffset(offset: NSNumber(value: HyBidSkipOffset.DEFAULT_PC_INTERSTITIAL_SKIP_OFFSET), isCustom: true)
+            }
+        } else {
+            if let skipOffset = ad.interstitialHtmlSkipOffset {
+                if skipOffset.intValue < 0 {
+                    self.htmlSkipOffset = HyBidSkipOffset(offset: NSNumber(value: HyBidSkipOffset.DEFAULT_HTML_SKIP_OFFSET), isCustom: true)
+                } else {
+                    self.htmlSkipOffset = HyBidSkipOffset(offset: skipOffset, isCustom: true)
+                }
+            }
         }
-        if ad.videoSkipOffset != nil {
-            self.videoSkipOffset = HyBidSkipOffset(offset: ad.videoSkipOffset, isCustom: true)
+        if let skipOffset = ad.videoSkipOffset {
+            var defaultSkipOffset = HyBidSkipOffset.DEFAULT_PC_VIDEO_MAX_SKIP_OFFSET_NON_COMPANION
+            if ad.hasEndCard || ad.hasCustomEndCard {
+                defaultSkipOffset = HyBidSkipOffset.DEFAULT_PC_VIDEO_MAX_SKIP_OFFSET_COMPANION
+            }
+            if skipOffset.intValue < 0 {
+                self.videoSkipOffset = HyBidSkipOffset(offset: NSNumber(value: defaultSkipOffset), isCustom: true)
+            } else if skipOffset.intValue >= HyBidSkipOffset.DEFAULT_INTERSTITIAL_VIDEO_MAX_SKIP_OFFSET {
+                self.videoSkipOffset = HyBidSkipOffset(offset: NSNumber(value: HyBidSkipOffset.DEFAULT_INTERSTITIAL_VIDEO_MAX_SKIP_OFFSET), isCustom: true)
+            } else {
+                self.videoSkipOffset = HyBidSkipOffset(offset: skipOffset, isCustom: true)
+            }
+        } else {
+            if ad.hasEndCard || ad.hasCustomEndCard {
+                self.videoSkipOffset = HyBidSkipOffset(offset: NSNumber(value: HyBidSkipOffset.DEFAULT_VIDEO_SKIP_OFFSET), isCustom: true)
+            } else {
+                self.videoSkipOffset = HyBidSkipOffset(offset: NSNumber(value: HyBidSkipOffset.DEFAULT_SKIP_OFFSET_WITHOUT_ENDCARD), isCustom: true)
+            }
         }
     }
-    
     func determineCloseOnFinishFor(_ ad: HyBidAd) {
         if (ad.closeInterstitialAfterFinish != nil) {
             self.closeOnFinish = ad.closeInterstitialAfterFinish.boolValue;
@@ -465,15 +507,17 @@ extension HyBidInterstitialAd {
     }
     
     func interstitialPresenterDidShow(_ interstitialPresenter: HyBidInterstitialPresenter!) {
-        if let initialRenderTimestamp = self.initialRenderTimestamp, initialRenderTimestamp
-            != -1 {
-            self.loadReportingProperties[Common.RENDER_TIME] = String(format: "%f",
-                                                                      elapsedTimeSince(initialRenderTimestamp))
+        if HyBidSDKConfig.sharedConfig.reporting {
+            if let initialRenderTimestamp = self.initialRenderTimestamp, initialRenderTimestamp
+                != -1 {
+                self.loadReportingProperties[Common.RENDER_TIME] = String(format: "%f",
+                                                                          elapsedTimeSince(initialRenderTimestamp))
+            }
+            self.renderReportingProperties = HyBid.reportingManager().addCommonProperties(forAd: self.ad, withRequest: self.interstitialAdRequest)
+            self.sessionReportingProperties = self.addSessionReportingProperties()
+            self.reportEvent(EventType.RENDER, properties: self.renderReportingProperties)
+            self.reportEvent(EventType.SESSION_REPORT_INFO, properties: self.sessionReportingProperties)
         }
-        self.renderReportingProperties = self.addCommonPropertiesToReportingDictionary()
-        self.sessionReportingProperties = self.addSessionReportingProperties()
-        self.reportEvent(EventType.RENDER, properties: self.renderReportingProperties)
-        self.reportEvent(EventType.SESSION_REPORT_INFO, properties: self.sessionReportingProperties)
         self.invokeDidTrackImpression()
     }
     
@@ -505,4 +549,26 @@ extension HyBidInterstitialAd {
     func signalDataDidFailWithError(_ error: Error) {
         invokeDidFailWithError(error: error)
     }
+}
+
+// MARK: - Utils
+
+extension HyBidInterstitialAd {
+    
+    func isValidBundleID(ad: HyBidAd?) -> Bool {
+
+        guard let ad = ad, let bundleID = ad.bundleID, !bundleID.isEmpty else {
+            return false
+        }
+
+        let notDigits = CharacterSet.decimalDigits.inverted
+        let isValidNumeric = bundleID.rangeOfCharacter(from: notDigits) == nil
+        
+        if !isValidNumeric || (isValidNumeric && Int(bundleID) ?? 0 <= 0) {
+            return false
+        }
+        
+        return true
+    }
+    
 }

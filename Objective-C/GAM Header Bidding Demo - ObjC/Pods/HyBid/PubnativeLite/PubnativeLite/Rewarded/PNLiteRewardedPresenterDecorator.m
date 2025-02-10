@@ -42,6 +42,7 @@
 @property (nonatomic, strong) NSMutableDictionary *errorReportingProperties;
 @property (nonatomic, strong) HyBidSKOverlay *skoverlay;
 @property (nonatomic, strong) PNLiteImpressionTracker *impressionTracker;
+@property (nonatomic, strong) HyBidCustomCTAView *customCTA;
 
 @end
 
@@ -53,6 +54,8 @@
     self.rewardedPresenterDelegate = nil;
     self.errorReportingProperties = nil;
     self.skoverlay = nil;
+    self.customCTA = nil;
+    self.skoverlayDelegate = nil;
 }
 
 - (void)load {
@@ -84,32 +87,15 @@
     return self;
 }
 
-- (void)addCommonPropertiesToReportingDictionary:(NSMutableDictionary *)reportingDictionary withRewardedPresenter:(HyBidRewardedPresenter *)rewardedPresenter {
-    if ([HyBidSDKConfig sharedConfig].appToken != nil && [HyBidSDKConfig sharedConfig].appToken.length > 0) {
-        [reportingDictionary setObject:[HyBidSDKConfig sharedConfig].appToken forKey:HyBidReportingCommon.APPTOKEN];
-    }
-    if (rewardedPresenter.ad.zoneID != nil && rewardedPresenter.ad.zoneID.length > 0) {
-        [reportingDictionary setObject:rewardedPresenter.ad.zoneID forKey:HyBidReportingCommon.ZONE_ID];
-    }
-    if (rewardedPresenter.ad.assetGroupID) {
-        [reportingDictionary setObject:@"VAST" forKey:HyBidReportingCommon.AD_TYPE];
-    }
-
-    NSString *vast = rewardedPresenter.ad.isUsingOpenRTB
-            ? rewardedPresenter.ad.openRtbVast
-            : rewardedPresenter.ad.vast;
-    if (vast) {
-        [reportingDictionary setObject:vast forKey:HyBidReportingCommon.CREATIVE];
-    }
-}
-
 #pragma mark HyBidRewardedPresenterDelegate
 
 - (void)rewardedPresenterDidLoad:(HyBidRewardedPresenter *)rewardedPresenter {
     if (self.rewardedPresenterDelegate && [self.rewardedPresenterDelegate respondsToSelector:@selector(rewardedPresenterDidLoad:)]) {
         if (self.rewardedPresenter.ad.skoverlayEnabled) {
             if ([self.rewardedPresenter.ad.skoverlayEnabled boolValue]) {
-                self.skoverlay = [[HyBidSKOverlay alloc] initWithAd:rewardedPresenter.ad];
+                self.skoverlay = [[HyBidSKOverlay alloc] initWithAd:rewardedPresenter.ad
+                                                         isRewarded:YES
+                                                           delegate:rewardedPresenter.skoverlayDelegate];
             }
         } 
         [self.rewardedPresenterDelegate rewardedPresenterDidLoad:rewardedPresenter];
@@ -125,47 +111,98 @@
     }
 }
 
+- (void)rewardedPresenterDidLoad:(HyBidRewardedPresenter *)rewardedPresenter viewController:(UIViewController *)viewController {
+    [self rewardedPresenterDidLoad:rewardedPresenter];
+    if ([HyBidCustomCTAView isCustomCTAValidWithAd: rewardedPresenter.ad]) {
+        self.customCTA = [[HyBidCustomCTAView alloc] initWithAd:rewardedPresenter.ad viewController: viewController delegate:rewardedPresenter.customCTADelegate adFormat:HyBidReportingAdFormat.REWARDED];
+    }
+}
+
 - (void)rewardedPresenterDidShow:(HyBidRewardedPresenter *)rewardedPresenter {
     if (self.rewardedPresenterDelegate && [self.rewardedPresenterDelegate respondsToSelector:@selector(rewardedPresenterDidShow:)] && !self.adTracker.impressionTracked) {
         [self.adTracker trackImpressionWithAdFormat:HyBidReportingAdFormat.REWARDED];
         [self.rewardedPresenterDelegate rewardedPresenterDidShow:rewardedPresenter];
         [self.skoverlay addObservers];
         [self.skoverlay presentWithAd:rewardedPresenter.ad];
+        [self.customCTA presentCustomCTAWithDelay];
     }
 }
 
 - (void)rewardedPresenterDidClick:(HyBidRewardedPresenter *)rewardedPresenter {
     if (self.rewardedPresenterDelegate && [self.rewardedPresenterDelegate respondsToSelector:@selector(rewardedPresenterDidClick:)]) {
-        [self.adTracker trackClickWithAdFormat:HyBidReportingAdFormat.REWARDED];
+        if (self.rewardedPresenter.ad.shouldReportCustomEndcardImpression) {
+            [self.adTracker trackCustomEndCardClickWithAdFormat:HyBidReportingAdFormat.REWARDED];
+        } else {
+            [self.adTracker trackClickWithAdFormat:HyBidReportingAdFormat.REWARDED];
+        }
         [self.rewardedPresenterDelegate rewardedPresenterDidClick:rewardedPresenter];
+    }
+}
+
+- (void)rewardedPresenterDidSKOverlayAutomaticClick:(HyBidRewardedPresenter *)rewardedPresenter clickType:(HyBidSKOverlayAutomaticCLickType)clickType {
+    
+    switch(clickType){
+        case HyBidSKOverlayAutomaticCLickVideo:
+            [self.adTracker trackSKOverlayAutomaticClickWithAdFormat:HyBidReportingAdFormat.REWARDED];
+            break;
+        case HyBidSKOverlayAutomaticCLickDefaultEndCard:
+            [self.adTracker trackSKOverlayAutomaticDefaultEndCardClickWithAdFormat:HyBidReportingAdFormat.REWARDED];
+            break;
+        case HyBidSKOverlayAutomaticCLickCustomEndCard:
+            [self.adTracker trackSKOverlayAutomaticCustomEndCardClickWithAdFormat:HyBidReportingAdFormat.REWARDED];
+            break;
+    }
+}
+
+- (void)rewardedPresenterDidStorekitAutomaticClick:(HyBidRewardedPresenter *)rewardedPresenter clickType:(HyBidStorekitAutomaticClickType)clickType {
+    
+    switch(clickType){
+        case HyBidStorekitAutomaticClickVideo:
+            [self.adTracker trackStorekitAutomaticClickWithAdFormat:HyBidReportingAdFormat.REWARDED];
+            break;
+        case HyBidStorekitAutomaticClickDefaultEndCard:
+            [self.adTracker trackStorekitAutomaticDefaultEndCardClickWithAdFormat:HyBidReportingAdFormat.REWARDED];
+            break;
+        case HyBidStorekitAutomaticClickCustomEndCard:
+            [self.adTracker trackStorekitAutomaticCustomEndCardClickWithAdFormat:HyBidReportingAdFormat.REWARDED];
+            break;
     }
 }
 
 - (void)rewardedPresenterDidDismiss:(HyBidRewardedPresenter *)rewardedPresenter {
     if (self.rewardedPresenterDelegate && [self.rewardedPresenterDelegate respondsToSelector:@selector(rewardedPresenterDidDismiss:)]) {
+        if ([HyBidSDKConfig sharedConfig].reporting) {
+            HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.REWARDED_CLOSED adFormat:HyBidReportingAdFormat.FULLSCREEN properties:nil];
+            [[HyBid reportingManager] reportEventFor:reportingEvent];
+        }
         [self.rewardedPresenterDelegate rewardedPresenterDidDismiss:rewardedPresenter];
         [self.skoverlay dismissEntirely:YES withAd:rewardedPresenter.ad causedByAutoCloseTimerCompletion:NO];
+    }
+    
+    if (self.customCTA) {
+        [self.customCTA removeCustomCTA];
     }
 }
 
 - (void)rewardedPresenterDidFinish:(HyBidRewardedPresenter *)rewardedPresenter
 {
     if (self.rewardedPresenterDelegate && [self.rewardedPresenterDelegate respondsToSelector:@selector(rewardedPresenterDidFinish:)]) {
-        HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.VIDEO_FINISHED adFormat:HyBidReportingAdFormat.REWARDED properties:nil];
-        [[HyBid reportingManager] reportEventFor:reportingEvent];
         [self.rewardedPresenterDelegate rewardedPresenterDidFinish:rewardedPresenter];
     }
 }
 
 - (void)rewardedPresenter:(HyBidRewardedPresenter *)rewardedPresenter didFailWithError:(NSError *)error {
     if (self.rewardedPresenterDelegate && [self.rewardedPresenterDelegate respondsToSelector:@selector(rewardedPresenter:didFailWithError:)]) {
-        if (error != nil && error.localizedDescription != nil && error.localizedDescription.length > 0) {
-            [self.errorReportingProperties setObject:error.localizedDescription forKey:HyBidReportingCommon.ERROR_MESSAGE];
-        }
-        [self addCommonPropertiesToReportingDictionary:self.errorReportingProperties withRewardedPresenter:rewardedPresenter];
-        if(self.errorReportingProperties){
-            HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.ERROR adFormat:HyBidReportingAdFormat.REWARDED properties:self.errorReportingProperties];
-            [[HyBid reportingManager] reportEventFor:reportingEvent];
+        if ([HyBidSDKConfig sharedConfig].reporting) {
+            if (error != nil && error.localizedDescription != nil && error.localizedDescription.length > 0) {
+                [self.errorReportingProperties setObject:error.localizedDescription forKey:HyBidReportingCommon.ERROR_MESSAGE];
+            }
+            if(self.errorReportingProperties){
+                [self.errorReportingProperties addEntriesFromDictionary:[[HyBid reportingManager] addCommonPropertiesForAd:rewardedPresenter.ad withRequest:nil]];
+                
+                HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.ERROR adFormat:HyBidReportingAdFormat.REWARDED properties:self.errorReportingProperties];
+                [[HyBid reportingManager] reportEventFor:reportingEvent];
+            }
         }
         [self.rewardedPresenterDelegate rewardedPresenter:rewardedPresenter didFailWithError:error];
     }
@@ -185,6 +222,29 @@
 
 - (void)rewardedPresenterDismissesSKOverlay:(HyBidRewardedPresenter *)rewardedPresenter {
     [self.skoverlay dismissEntirely:YES withAd:rewardedPresenter.ad causedByAutoCloseTimerCompletion:NO];
+}
+
+- (void)rewardedPresenterDismissesCustomCTA:(HyBidRewardedPresenter *)rewardedPresenter {
+    if (self.customCTA) {
+        [self.customCTA removeCustomCTA];
+    }
+}
+
+- (void)rewardedPresenteWillPresentEndCard:(HyBidRewardedPresenter *)rewardedPresenter skoverlayDelegate:(id<HyBidSKOverlayDelegate>)skoverlayDelegate customCTADelegate:(id<HyBidCustomCTAViewDelegate>)customCTADelegate {
+    [self.skoverlay changeDelegateFor:skoverlayDelegate];
+    [self.customCTA changeDelegateFor:customCTADelegate];
+}
+
+- (void)rewardedPresenterDidPresentCustomEndCard:(HyBidRewardedPresenter *)rewardedPresenter {
+    [self.adTracker trackCustomEndCardImpressionWithAdFormat:HyBidReportingAdFormat.REWARDED];
+}
+
+- (void)rewardedPresenterDidPresentsCustomCTA {
+    [self.adTracker trackCustomCTAImpressionWithAdFormat:HyBidReportingAdFormat.REWARDED];
+}
+
+- (void)rewardedPresenterDidClickCustomCTAOnEndCard:(BOOL)OnEndCard {
+    [self.adTracker trackCustomCTAClickWithAdFormat:HyBidReportingAdFormat.REWARDED onEndCard:OnEndCard];
 }
 
 @end

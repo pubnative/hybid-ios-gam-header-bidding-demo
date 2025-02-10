@@ -25,6 +25,7 @@
 #import "HyBidVASTModel.h"
 #import "HyBidVASTSchema.h"
 #import "HyBidXMLEx.h"
+#import "HyBidVASTParserError.h"
 
 #if __has_include(<HyBid/HyBid-Swift.h>)
     #import <HyBid/HyBid-Swift.h>
@@ -46,7 +47,7 @@ BOOL const HyBidVASTModel_ValidateWithSchema = NO;
 
 @property (nonatomic, strong) HyBidVASTModel *vastModel;
 
-- (HyBidVASTParserError)parseRecursivelyWithData:(NSData *)vastData depth:(int)depth;
+- (HyBidVASTParserError *)parseRecursivelyWithData:(NSData *)vastData depth:(int)depth;
 
 
 @end
@@ -79,7 +80,7 @@ BOOL const HyBidVASTModel_ValidateWithSchema = NO;
 - (void)parseWithUrl:(NSURL *)url completion:(HyBidVastParserCompletionBlock)block {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSData *vastData = [NSData dataWithContentsOfURL:url];
-        HyBidVASTParserError vastError = [self parseRecursivelyWithData:vastData depth:0];
+        HyBidVASTParserError *vastError = [self parseRecursivelyWithData:vastData depth:0];
         dispatch_async(dispatch_get_main_queue(), ^{
             block(self.vastModel, vastError);
         });
@@ -88,7 +89,7 @@ BOOL const HyBidVASTModel_ValidateWithSchema = NO;
 
 - (void)parseWithData:(NSData *)vastData completion:(HyBidVastParserCompletionBlock)block {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        HyBidVASTParserError vastError = [self parseRecursivelyWithData:vastData depth:0];
+        HyBidVASTParserError *vastError = [self parseRecursivelyWithData:vastData depth:0];
         dispatch_async(dispatch_get_main_queue(), ^{
             block(self.vastModel, vastError);
         });
@@ -97,7 +98,7 @@ BOOL const HyBidVASTModel_ValidateWithSchema = NO;
 
 #pragma mark - "private" method
 
-- (HyBidVASTParserError)parseRecursivelyWithData:(NSData *)vastData depth:(int)depth {
+- (HyBidVASTParserError *)parseRecursivelyWithData:(NSData *)vastData depth:(int)depth {
     NSString *vastDataString = nil;
     
     @try {
@@ -107,37 +108,17 @@ BOOL const HyBidVASTModel_ValidateWithSchema = NO;
     }
     
     if (!vastDataString) {
-        return HyBidVASTParserError_XMLParse;
-    }
-    // having XML namespace in the XML causes parsing issues
-    // therefore we are replacing the starting <VAST> line
-    NSString *regexExp = @"<VAST .*?>";
-    NSError *error = NULL;
-    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:regexExp options:NSRegularExpressionCaseInsensitive error:&error];
-    NSTextCheckingResult *match = [regex firstMatchInString:vastDataString options:0 range: NSMakeRange(0, [vastDataString length])];
-    
-    NSString *newXmlString = vastDataString;
-    
-    if ([match numberOfRanges] > 0) {
-        NSString *matchedString = [vastDataString substringWithRange:[match rangeAtIndex:0]];
-        
-        HyBidXMLEx *parser = [HyBidXMLEx parserWithXML:vastDataString];
-        NSString *vastVersion = [[parser rootElement] attribute:@"version"];
-        
-        if (vastVersion != nil) {
-            NSString *customVASTLine = [[NSString alloc] initWithFormat: @"<VAST version=\"%@\">", vastVersion];
-            newXmlString = [vastDataString stringByReplacingOccurrencesOfString:matchedString withString:customVASTLine options:0 range:NSMakeRange(0, [vastDataString length])];
-        }
+        return [HyBidVASTParserError initWithParserErrorType: HyBidVASTParserError_XMLParse];
     }
     
-    vastData = [newXmlString dataUsingEncoding:NSUTF8StringEncoding];
+    vastData = [self removingVastFirstLineParamsFrom: vastDataString];
     @synchronized (self.vastArray) {
         [self.vastArray addObject:vastData];
     }
 
     if (depth > HyBidVASTModel_MaxRecursiveDepth) {
         self.vastModel = nil;
-        return HyBidVASTParserError_TooManyWrappers;
+        return [HyBidVASTParserError initWithParserErrorType: HyBidVASTParserError_TooManyWrappers];
     }
     
     // sanity check
@@ -148,7 +129,7 @@ BOOL const HyBidVASTModel_ValidateWithSchema = NO;
     isValid = validateXMLDocSyntax(vastData);
     if (!isValid) {
         self.vastModel = nil;
-        return HyBidVASTParserError_XMLParse;
+        return [HyBidVASTParserError initWithParserErrorType: HyBidVASTParserError_XMLParse];
     }
 
     if (HyBidVASTModel_ValidateWithSchema) {
@@ -160,7 +141,7 @@ BOOL const HyBidVASTModel_ValidateWithSchema = NO;
         isValid = validateXMLDocAgainstSchema(vastData, HyBidVASTSchemaData);
         if (!isValid) {
             self.vastModel = nil;
-            return HyBidVASTParserError_SchemaValidation;
+            return [HyBidVASTParserError initWithParserErrorType: HyBidVASTParserError_SchemaValidation];
         }
     }
     
@@ -171,17 +152,22 @@ BOOL const HyBidVASTModel_ValidateWithSchema = NO;
     if ([self.vastModel errors].count > 0) {
         if(self.vastModel.ads.count > 0) {
             self.vastModel = nil;
-            return HyBidVASTParserError_BothAdAndErrorPresentInRootResponse;
+            return [HyBidVASTParserError initWithParserErrorType: HyBidVASTParserError_BothAdAndErrorPresentInRootResponse];
         } else {
+            HyBidVASTParserError *error = [HyBidVASTParserError initWithParserErrorType: HyBidVASTParserError_NoAdResponse errorTagURLs: self.vastModel.errors];
             self.vastModel = nil;
-            return HyBidVASTParserError_NoAdResponse;
+            return error;
         }
     }
     
     // Check to see whether this is a wrapper ad. If so, process it.
     NSString *query = @"//VASTAdTagURI";
     NSArray *results = performXMLXPathQuery(vastData, query);
-    if ([results count] > 0) {
+    // Validating to use VASTAdTagURI just from wrappers and not from InLine
+    NSString *inLineQuery = @"//InLine";
+    NSArray *inLineResults = performXMLXPathQuery(vastData, inLineQuery);
+
+    if ([results count] > 0 && inLineResults.count == 0) {
         NSString *url;
         NSDictionary *node = results[0];
         // Checking if CDATA does not exist and content is not empty. Then proceed with raw URL
@@ -195,10 +181,23 @@ BOOL const HyBidVASTModel_ValidateWithSchema = NO;
                 // we assume that there's only one element in the array
                 url = ((NSDictionary *)childArray[0])[@"nodeContent"];
                 url = [url stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+                NSString *urlWithPercentEncoding = url;
                 url = [url stringByRemovingPercentEncoding];
                 vastData = [NSData dataWithContentsOfURL:[NSURL URLWithString:[url stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]]];
+                BOOL isVASTDataWithPercentEncoding = NO;
+                if (!vastData) {
+                    vastData = [NSData dataWithContentsOfURL:[NSURL URLWithString:[urlWithPercentEncoding stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]]];
+                    isVASTDataWithPercentEncoding = YES;
+                }
+                
                 if(vastData) {
                     vastDataString = [[NSString alloc] initWithData:vastData encoding:NSUTF8StringEncoding];
+                    vastData = [self removingVastFirstLineParamsFrom: vastDataString];
+                    if (!validateXMLDocSyntax(vastData) && !isVASTDataWithPercentEncoding) {
+                        vastData = [NSData dataWithContentsOfURL:[NSURL URLWithString:[urlWithPercentEncoding stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]]];
+                        vastDataString = [[NSString alloc] initWithData:vastData encoding:NSUTF8StringEncoding];
+                        vastData = [self removingVastFirstLineParamsFrom: vastDataString];
+                    }
                     @synchronized (self.vastArray) {
                         [self.vastArray addObject:vastData];
                     }
@@ -209,7 +208,35 @@ BOOL const HyBidVASTModel_ValidateWithSchema = NO;
         return [self parseRecursivelyWithData:vastData depth:(depth + 1)];
     }
     
-    return HyBidVASTParserError_None;
+    return [HyBidVASTParserError initWithParserErrorType: HyBidVASTParserError_None];
+}
+
+- (NSData *)removingVastFirstLineParamsFrom:(NSString *)vastDataString {
+    // having XML namespace in the XML causes parsing issues
+    // therefore we are replacing the starting <VAST> line
+    NSString *regexExp = @"<VAST .*?>";
+    NSError *error = NULL;
+    if (vastDataString == nil) {
+        return [@"" dataUsingEncoding:NSUTF8StringEncoding];
+    }
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:regexExp options:NSRegularExpressionCaseInsensitive error:&error];
+    NSTextCheckingResult *match = [regex firstMatchInString:vastDataString options:0 range: NSMakeRange(0, [vastDataString length])];
+
+    NSString *newXmlString = vastDataString;
+
+    if ([match numberOfRanges] > 0) {
+        NSString *matchedString = [vastDataString substringWithRange:[match rangeAtIndex:0]];
+
+        HyBidXMLEx *parser = [HyBidXMLEx parserWithXML:vastDataString];
+        NSString *vastVersion = [[parser rootElement] attribute:@"version"];
+
+        if (vastVersion != nil) {
+            NSString *customVASTLine = [[NSString alloc] initWithFormat: @"<VAST version=\"%@\">", vastVersion];
+            newXmlString = [vastDataString stringByReplacingOccurrencesOfString:matchedString withString:customVASTLine options:0 range:NSMakeRange(0, [vastDataString length])];
+        }
+    }
+
+    return [newXmlString dataUsingEncoding:NSUTF8StringEncoding];
 }
 
 - (NSString *)content:(NSDictionary *)node {

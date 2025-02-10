@@ -24,7 +24,7 @@
 
 @implementation HyBidSKAdNetworkParameter
 
-+ (NSString *)sourceIdentifier { return @"sourceIdentifier"; }
++ (NSString *)sourceIdentifier { return @"sourceidentifier"; }
 + (NSString *)campaign { return @"campaign"; }
 + (NSString *)itunesitem { return @"itunesitem"; }
 + (NSString *)network { return @"network"; }
@@ -43,5 +43,6 @@
 + (NSString *)delay { return @"delay";}
 + (NSString *)endcardDelay { return @"endcarddelay"; }
 + (NSString *)autoClose { return @"autoclose"; }
++ (NSString *)click { return @"click"; }
 
 @end
