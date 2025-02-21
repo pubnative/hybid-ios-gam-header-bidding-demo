@@ -8,7 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ATOMTCFv1StorageProtocol.h"
 #import "ATOMTCFv2StorageProtocol.h"
 #import "ATOMTCStringParser.h"
 
@@ -38,13 +37,6 @@
 //******************************************************************
 #pragma mark - V1 Specific
 //******************************************************************
-
-/**
- Enum that indicates    'SubjectToGDPR_Unknown'- value -1, unset.
-                        'SubjectToGDPR_No' – value 0, not subject to GDPR
-                        'SubjectToGDPR_Yes' – value 1, subject to GDPR,
- */
-@property (nonatomic, assign) SubjectToGDPR subjectToGDPR;
 
 /**
  Integer ID of the IAB CMP
@@ -142,7 +134,6 @@ Returns true if user consent has been given to vendor for the specified consent 
  The object that provides all the GDPR-related data for further processing.
  The default data storage is NSUserDefaults.
  */
-@property (nonatomic, retain) id<ATOMTCFv1StorageProtocol> v1DataStorage;
 @property (nonatomic, retain) id<ATOMTCFv2StorageProtocol> v2DataStorage;
 
 @end
