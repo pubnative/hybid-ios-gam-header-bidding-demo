@@ -1,23 +1,7 @@
+// 
+// HyBid SDK License
 //
-//  Copyright © 2018 PubNative. All rights reserved.
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
+// https://github.com/pubnative/pubnative-hybid-ios-sdk/blob/main/LICENSE
 //
 
 #import "HyBidNativeAdLoader.h"
@@ -43,6 +27,7 @@
 
 @property (nonatomic, weak) NSTimer *autoRefreshTimer;
 @property (nonatomic, assign) BOOL shouldRunAutoRefresh;
+@property (nonatomic, strong) HyBidAdSessionData *adSessionData;
 
 @end
 
@@ -71,7 +56,6 @@
 }
 
 - (void)loadNativeExchangeAdWithDelegate:(NSObject<HyBidNativeAdLoaderDelegate> *)delegate withZoneID:(NSString *)zoneID {
-    //TODO: Add load with open rtb logic when using this func
     [self loadNativeAdWithDelegate:delegate withZoneID:zoneID withAppToken:nil];
 }
 
@@ -79,6 +63,9 @@
     self.delegate = delegate;
     self.zoneID = zoneID;
     self.appToken = appToken;
+    if (self.adSessionData == nil) {
+        self.adSessionData = [[HyBidAdSessionData alloc] init];
+    }
     [self requestAd];
 }
 
@@ -166,7 +153,7 @@
     if (!ad) {
         [self invokeDidFailWithError:[NSError hyBidNullAd]];
     } else {
-        [self invokeDidLoadWithNativeAd:[[HyBidNativeAd alloc] initWithAd:ad]];
+        [self loadNativeAdWithRequest:request ad:ad];
     }
 }
 
@@ -181,12 +168,19 @@
     if (!ad) {
         [self invokeDidFailWithError:[NSError hyBidNullAd]];
     } else {
-        [self invokeDidLoadWithNativeAd:[[HyBidNativeAd alloc] initWithAd:ad]];
+        [self loadNativeAdWithRequest:nil ad:ad];
     }
 }
 
 - (void)signalDataDidFailWithError:(NSError *)error {
     [self invokeDidFailWithError:error];
+}
+
+- (void)loadNativeAdWithRequest:(HyBidAdRequest *)request ad:(HyBidAd *)ad {
+    self.adSessionData = [ATOMManager createAdSessionDataFrom:request ad:ad];
+    HyBidNativeAd *nativeAd = [[HyBidNativeAd alloc] initWithAd:ad];
+    nativeAd.adSessionData = self.adSessionData;
+    [self invokeDidLoadWithNativeAd:nativeAd];
 }
 
 @end

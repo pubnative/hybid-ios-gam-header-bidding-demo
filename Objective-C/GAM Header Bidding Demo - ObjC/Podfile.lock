@@ -1,33 +1,33 @@
 PODS:
-  - ATOM-Standalone (3.5.0)
-  - Google-Mobile-Ads-SDK (11.13.0):
+  - ATOM-Standalone (3.7.0)
+  - Google-Mobile-Ads-SDK (12.8.0):
     - GoogleUserMessagingPlatform (>= 1.1)
-  - GoogleMobileAds-HyBid-Adapters (3.2.0.0):
-    - Google-Mobile-Ads-SDK (~> 11.0)
-    - HyBid (= 3.2.0)
-  - GoogleUserMessagingPlatform (2.7.0)
-  - HyBid (3.2.0):
-    - HyBid/ATOM (= 3.2.0)
-    - HyBid/Banner (= 3.2.0)
-    - HyBid/Core (= 3.2.0)
-    - HyBid/FullScreen (= 3.2.0)
-    - HyBid/Native (= 3.2.0)
-    - HyBid/RewardedVideo (= 3.2.0)
-  - HyBid/ATOM (3.2.0):
-    - ATOM-Standalone (~> 3.5.0)
+  - GoogleMobileAds-HyBid-Adapters (3.6.1.0):
+    - Google-Mobile-Ads-SDK (~> 12.0)
+    - HyBid (= 3.6.1)
+  - GoogleUserMessagingPlatform (3.0.0)
+  - HyBid (3.6.1):
+    - HyBid/ATOM (= 3.6.1)
+    - HyBid/Banner (= 3.6.1)
+    - HyBid/Core (= 3.6.1)
+    - HyBid/FullScreen (= 3.6.1)
+    - HyBid/Native (= 3.6.1)
+    - HyBid/RewardedVideo (= 3.6.1)
+  - HyBid/ATOM (3.6.1):
+    - ATOM-Standalone
     - HyBid/Core
-  - HyBid/Banner (3.2.0):
+  - HyBid/Banner (3.6.1):
     - HyBid/Core
-  - HyBid/Core (3.2.0)
-  - HyBid/FullScreen (3.2.0):
+  - HyBid/Core (3.6.1)
+  - HyBid/FullScreen (3.6.1):
     - HyBid/Core
-  - HyBid/Native (3.2.0):
+  - HyBid/Native (3.6.1):
     - HyBid/Core
-  - HyBid/RewardedVideo (3.2.0):
+  - HyBid/RewardedVideo (3.6.1):
     - HyBid/Core
 
 DEPENDENCIES:
-  - GoogleMobileAds-HyBid-Adapters (= 3.2.0.0)
+  - GoogleMobileAds-HyBid-Adapters (= 3.6.1.0)
 
 SPEC REPOS:
   trunk:
@@ -38,12 +38,12 @@ SPEC REPOS:
     - HyBid
 
 SPEC CHECKSUMS:
-  ATOM-Standalone: c6f8d00c510cdeec33aa95cdf1f31d78b62d0aa7
-  Google-Mobile-Ads-SDK: 14f57f2dc33532a24db288897e26494640810407
-  GoogleMobileAds-HyBid-Adapters: d9309a30ae18655fe382e66e069560127ba7d31b
-  GoogleUserMessagingPlatform: a8b56893477f67212fbc8411c139e61d463349f5
-  HyBid: 575a647ce48fb4ed40dab1a1ce203b1ae0cdb294
+  ATOM-Standalone: 28d598876cd7ab619f2cf0b910d4f4fd7e8c8f74
+  Google-Mobile-Ads-SDK: ece122bc89b38cab319543bc464a9ceabfe1d307
+  GoogleMobileAds-HyBid-Adapters: 685d946e378b4af86d5b6c14c1482635c5f9572a
+  GoogleUserMessagingPlatform: f8d0cdad3ca835406755d0a69aa634f00e76d576
+  HyBid: f6ed92d6af10dcbc23f8a43a42fdf88a45ecdec7
 
-PODFILE CHECKSUM: a19ad3e02ec006d988b3c8b81aef45e96ae56c08
+PODFILE CHECKSUM: 6b128913c91c802de0ace555d02c98797010873b
 
-COCOAPODS: 1.16.1
+COCOAPODS: 1.16.2

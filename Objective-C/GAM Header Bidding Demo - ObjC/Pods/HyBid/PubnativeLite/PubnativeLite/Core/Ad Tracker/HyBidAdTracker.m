@@ -1,23 +1,7 @@
+// 
+// HyBid SDK License
 //
-//  Copyright © 2018 PubNative. All rights reserved.
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
+// https://github.com/pubnative/pubnative-hybid-ios-sdk/blob/main/LICENSE
 //
 
 #import "HyBidAdTracker.h"
@@ -72,6 +56,7 @@ NSString *const PNLiteAdCustomCTAEndCardClick = @"custom_cta_endcard_click";
 
 @property (nonatomic, strong) HyBidAd *ad;
 @property (nonatomic, strong) NSMutableDictionary<NSString*, NSArray<NSString *>*> *trackedURLsDictionary;
+@property (nonatomic, assign) BOOL vastReplayCLickTracked;
 
 @end
 
@@ -329,6 +314,19 @@ NSString *const PNLiteAdCustomCTAEndCardClick = @"custom_cta_endcard_click";
     }
 }
 
+- (void)trackReplayClickWithAdFormat:(NSString *)adFormat {
+    if ([HyBidSDKConfig sharedConfig].reporting) {
+        HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.REPLAY
+                                                                          adFormat:adFormat
+                                                                        properties:nil];
+        [[HyBid reportingManager] reportEventFor:reportingEvent];
+    }
+    
+    if (self.vastReplayCLickTracked) { return; }
+    [[HyBidVASTEventBeaconsManager shared] reportVASTEventWithType:HyBidReportingEventType.REPLAY ad:self.ad];
+    self.vastReplayCLickTracked = YES;
+}
+
 - (void)trackURLs:(NSArray *)URLs withTrackingType:(NSString *)trackingType {
     if (URLs != nil) {
         for (HyBidDataModel *dataModel in URLs) {
@@ -436,9 +434,7 @@ NSString *const PNLiteAdCustomCTAEndCardClick = @"custom_cta_endcard_click";
     if ([beaconType isEqualToString:PNLiteAdCustomEndCardClick]) { beaconType = HyBidReportingBeaconType.CUSTOM_ENDCARD_CLICK; }
     if ([beaconType isEqualToString:PNLiteAdCustomCTAImpression]) { beaconType = HyBidReportingEventType.CUSTOM_CTA_IMPRESSION; }
     if ([beaconType isEqualToString:PNLiteAdCustomCTAClick]) { beaconType = HyBidReportingEventType.CUSTOM_CTA_CLICK; }
-    if ([beaconType isEqualToString:PNLiteAdCustomCTAEndCardClick]) {
-        beaconType = HyBidReportingEventType.CUSTOM_CTA_ENDCARD_CLICK;
-    }
+    if ([beaconType isEqualToString:PNLiteAdCustomCTAEndCardClick]) { beaconType = HyBidReportingEventType.CUSTOM_CTA_ENDCARD_CLICK; }
     
     NSMutableDictionary* beaconProperties = [NSMutableDictionary new];
     [beaconProperties setObject: beaconType forKey: @"type"];

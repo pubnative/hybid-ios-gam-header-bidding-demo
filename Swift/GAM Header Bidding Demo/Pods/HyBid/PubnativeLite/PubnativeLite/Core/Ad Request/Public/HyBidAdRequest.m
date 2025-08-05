@@ -1,23 +1,7 @@
+// 
+// HyBid SDK License
 //
-//  Copyright © 2018 PubNative. All rights reserved.
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
+// https://github.com/pubnative/pubnative-hybid-ios-sdk/blob/main/LICENSE
 //
 
 #import "HyBidAdRequest.h"
@@ -372,36 +356,37 @@ NSInteger const PNLiteResponseStatusOK = 200;
                         }
                         ad.isUsingOpenRTB = self.isUsingOpenRTB;
                         
-                        NSArray *endCards = [self fetchEndCardsFromVastAd:vastModel.vastArray];
-                        if ([ad.endcardEnabled boolValue] || (ad.endcardEnabled == nil && HyBidConstants.showEndCard)) {
-                            if ([endCards count] > 0) {
-                                [ad setHasEndCard:YES];
-                                if ([ad.customEndcardEnabled boolValue] || (ad.customEndcardEnabled == nil && HyBidConstants.showCustomEndCard)) {
-                                    if ([self customEndcardDisplayBehaviourFromString:ad.customEndcardDisplay] == HyBidCustomEndcardDisplayExtention || (ad.customEndcardDisplay == nil && HyBidConstants.customEndcardDisplay == HyBidCustomEndcardDisplayExtention)) {
+                        [self fetchEndCardsFromVastAd:vastModel.vastArray completion:^(NSArray<HyBidVASTEndCard *> *endCards) {
+                            if ([ad.endcardEnabled boolValue] || (ad.endcardEnabled == nil && HyBidConstants.showEndCard)) {
+                                if ([endCards count] > 0) {
+                                    [ad setHasEndCard:YES];
+                                    if ([ad.customEndcardEnabled boolValue] || (ad.customEndcardEnabled == nil && HyBidConstants.showCustomEndCard)) {
+                                        if ([self customEndcardDisplayBehaviourFromString:ad.customEndcardDisplay] == HyBidCustomEndcardDisplayExtention || (ad.customEndcardDisplay == nil && HyBidConstants.customEndcardDisplay == HyBidCustomEndcardDisplayExtention)) {
+                                            if (ad.customEndCardData && ad.customEndCardData.length > 0) {
+                                                [ad setHasCustomEndCard:YES];
+                                            }
+                                        }
+                                    }
+                                } else if ([endCards count] == 0) {
+                                    if ([ad.customEndcardEnabled boolValue] || (ad.customEndcardEnabled == nil && HyBidConstants.showCustomEndCard)){
                                         if (ad.customEndCardData && ad.customEndCardData.length > 0) {
                                             [ad setHasCustomEndCard:YES];
                                         }
                                     }
                                 }
-                            } else if ([endCards count] == 0) {
-                                if ([ad.customEndcardEnabled boolValue] || (ad.customEndcardEnabled == nil && HyBidConstants.showCustomEndCard)){
+                            } else if (ad.endcardEnabled != nil || (ad.endcardEnabled == nil && !HyBidConstants.showEndCard)) {
+                                if ([ad.customEndcardEnabled boolValue] || (ad.customEndcardEnabled == nil && HyBidConstants.showCustomEndCard)) {
                                     if (ad.customEndCardData && ad.customEndCardData.length > 0) {
                                         [ad setHasCustomEndCard:YES];
                                     }
                                 }
                             }
-                        } else if (ad.endcardEnabled != nil || (ad.endcardEnabled == nil && !HyBidConstants.showEndCard)) {
-                            if ([ad.customEndcardEnabled boolValue] || (ad.customEndcardEnabled == nil && HyBidConstants.showCustomEndCard)) {
-                                if (ad.customEndCardData && ad.customEndCardData.length > 0) {
-                                    [ad setHasCustomEndCard:YES];
-                                }
+                            [self invokeDidLoad:ad];
+                            if (self.cacheReportingProperties && [HyBidSDKConfig sharedConfig].reporting) {
+                                [self.cacheReportingProperties addEntriesFromDictionary:[[HyBid reportingManager] addCommonPropertiesForAd:ad withRequest:self]];
+                                [self reportEvent:HyBidReportingEventType.CACHE withProperties:self.cacheReportingProperties];
                             }
-                        }
-                        [self invokeDidLoad:ad];
-                        if (self.cacheReportingProperties && [HyBidSDKConfig sharedConfig].reporting) {
-                            [self.cacheReportingProperties addEntriesFromDictionary:[[HyBid reportingManager] addCommonPropertiesForAd:ad withRequest:self]];
-                            [self reportEvent:HyBidReportingEventType.CACHE withProperties:self.cacheReportingProperties];
-                        }
+                        }];
                     }
                 }];
             } else {
@@ -466,14 +451,14 @@ NSInteger const PNLiteResponseStatusOK = 200;
                 if (self.isUsingOpenRTB) {
                     NSInteger assetGroupID = 21;
                     NSInteger type = kHyBidAdTypeHTML;
-                    if (self.openRTBAdType == HyBidOpenRTBAdNative){
+                    if (self.openRTBAdType == HyBidOpenRTBAdNative) {
                         #if __has_include(<ATOM/ATOM-Swift.h>)
                         NSArray<NSString *> *cohorts = [self getCohortsFromRequestURL];
                         ad = [[HyBidAd alloc] initOpenRTBWithData:adModel withZoneID:self.zoneID withCohorts:cohorts];
                         #else
                         ad = [[HyBidAd alloc] initOpenRTBWithData:adModel withZoneID:self.zoneID];
                         #endif
-                    } else if (self.openRTBAdType == HyBidOpenRTBAdBanner){
+                    } else if (self.openRTBAdType == HyBidOpenRTBAdBanner) {
                         #if __has_include(<ATOM/ATOM-Swift.h>)
                         ad = [[HyBidAd alloc] initWithAssetGroupForOpenRTB:assetGroupID withAdContent: adContent withAdType:type withBidObject:bid];
                         #else
@@ -609,37 +594,40 @@ NSInteger const PNLiteResponseStatusOK = 200;
                 videoAdCacheItem.vastModel = vastModel;
                 [[HyBidVideoAdCache sharedInstance] putVideoAdCacheItemToCache:videoAdCacheItem withZoneID:self.zoneID];
                 
-                NSArray *endCards = [self fetchEndCardsFromVastAd:vastModel.vastArray];
-                if ([ad.endcardEnabled boolValue] || (ad.endcardEnabled == nil && HyBidConstants.showEndCard)) {
-                    if ([endCards count] > 0) {
-                        [ad setHasEndCard:YES];
-                        if ([ad.customEndcardEnabled boolValue] || (ad.customEndcardEnabled == nil && HyBidConstants.showCustomEndCard)) {
-                            if ([self customEndcardDisplayBehaviourFromString:ad.customEndcardDisplay] == HyBidCustomEndcardDisplayExtention || (ad.customEndcardDisplay == nil && HyBidConstants.customEndcardDisplay == HyBidCustomEndcardDisplayExtention)) {
+                [self fetchEndCardsFromVastAd:vastModel.vastArray completion:^(NSArray<HyBidVASTEndCard *> *endCards) {
+                    
+                    
+                    if ([ad.endcardEnabled boolValue] || (ad.endcardEnabled == nil && HyBidConstants.showEndCard)) {
+                        if ([endCards count] > 0) {
+                            [ad setHasEndCard:YES];
+                            if ([ad.customEndcardEnabled boolValue] || (ad.customEndcardEnabled == nil && HyBidConstants.showCustomEndCard)) {
+                                if ([self customEndcardDisplayBehaviourFromString:ad.customEndcardDisplay] == HyBidCustomEndcardDisplayExtention || (ad.customEndcardDisplay == nil && HyBidConstants.customEndcardDisplay == HyBidCustomEndcardDisplayExtention)) {
+                                    if (ad.customEndCardData && ad.customEndCardData.length > 0) {
+                                        [ad setHasCustomEndCard:YES];
+                                    }
+                                }
+                            }
+                        } else if ([endCards count] == 0) {
+                            if ([ad.customEndcardEnabled boolValue] || (ad.customEndcardEnabled == nil && HyBidConstants.showCustomEndCard)){
                                 if (ad.customEndCardData && ad.customEndCardData.length > 0) {
                                     [ad setHasCustomEndCard:YES];
                                 }
                             }
                         }
-                    } else if ([endCards count] == 0) {
-                        if ([ad.customEndcardEnabled boolValue] || (ad.customEndcardEnabled == nil && HyBidConstants.showCustomEndCard)){
+                    } else if (ad.endcardEnabled != nil || (ad.endcardEnabled == nil && !HyBidConstants.showEndCard)) {
+                        if ([ad.customEndcardEnabled boolValue] || (ad.customEndcardEnabled == nil && HyBidConstants.showCustomEndCard)) {
                             if (ad.customEndCardData && ad.customEndCardData.length > 0) {
                                 [ad setHasCustomEndCard:YES];
                             }
                         }
                     }
-                } else if (ad.endcardEnabled != nil || (ad.endcardEnabled == nil && !HyBidConstants.showEndCard)) {
-                    if ([ad.customEndcardEnabled boolValue] || (ad.customEndcardEnabled == nil && HyBidConstants.showCustomEndCard)) {
-                        if (ad.customEndCardData && ad.customEndCardData.length > 0) {
-                            [ad setHasCustomEndCard:YES];
-                        }
+                    [self invokeDidLoad:ad];
+                    if(self.cacheReportingProperties && [HyBidSDKConfig sharedConfig].reporting) {
+                        [self.cacheReportingProperties addEntriesFromDictionary:[[HyBid reportingManager] addCommonPropertiesForAd:ad withRequest:self]];
+                        [self reportEvent:HyBidReportingEventType.CACHE withProperties:self.cacheReportingProperties];
                     }
-                }
-                [self invokeDidLoad:ad];
-                if(self.cacheReportingProperties && [HyBidSDKConfig sharedConfig].reporting) {
-                    [self.cacheReportingProperties addEntriesFromDictionary:[[HyBid reportingManager] addCommonPropertiesForAd:ad withRequest:self]];
-                    [self reportEvent:HyBidReportingEventType.CACHE withProperties:self.cacheReportingProperties];
-                }
-                self.adCached = YES;
+                    self.adCached = YES;
+                }];
             }
         }];
     }
@@ -659,46 +647,45 @@ NSInteger const PNLiteResponseStatusOK = 200;
     }
 }
 
-- (NSArray<HyBidVASTEndCard *> *)fetchEndCardsFromVastAd:(NSArray *)vastModel {
-    HyBidVASTCompanionAds *companionAds;
+- (void)addCompanionsFromCreatives:(NSArray<HyBidVASTCreative *> *)creatives dispatchGroup:(dispatch_group_t)group {
+    for (HyBidVASTCreative *creative in creatives) {
+        HyBidVASTCompanionAds *companionAds = [creative companionAds];
+        if (companionAds && [companionAds companions]) {
+            for (HyBidVASTCompanion *companion in [companionAds companions]) {
+                dispatch_group_enter(group);
+                [self.endCardManager addCompanion:companion completion:^{
+                    dispatch_group_leave(group);
+                }];
+            }
+        }
+    }
+}
+
+- (void)fetchEndCardsFromVastAd:(NSArray *)vastModel completion:(void(^)(NSArray<HyBidVASTEndCard *> *endCards))completion {
+    dispatch_group_t group = dispatch_group_create();
     NSOrderedSet *vastSet = [[NSOrderedSet alloc] initWithArray:vastModel];
     NSArray *vastArray = [[NSMutableArray alloc] initWithArray:[vastSet array]];
-    for (NSData *vast in vastArray){
+    for (NSData *vast in vastArray) {
         NSString *xml = [[NSString alloc] initWithData:vast encoding:NSUTF8StringEncoding];
         HyBidXMLEx *parser = [HyBidXMLEx parserWithXML:xml];
         NSArray *result = [[parser rootElement] query:@"Ad"];
         for (int i = 0; i < [result count]; i++) {
-            HyBidVASTAd * ad;
-            if (result[i]) {
-                ad = [[HyBidVASTAd alloc] initWithXMLElement:result[i]];
-            }
-            if ([ad wrapper] != nil){
+            HyBidVASTAd *ad = [[HyBidVASTAd alloc] initWithXMLElement:result[i]];
+            if ([ad wrapper] != nil) {
                 NSArray<HyBidVASTCreative *> *creatives = [[ad wrapper] creatives];
-                for (HyBidVASTCreative *creative in creatives) {
-                    if ([creative companionAds] != nil) {
-                        companionAds = [creative companionAds];
-                        for (HyBidVASTCompanion *companion in [companionAds companions]) {
-                            [self.endCardManager addCompanion:companion];
-                        }
-                    }
-                }
-            }
-            if ([ad inLine] != nil) {
+                [self addCompanionsFromCreatives:creatives dispatchGroup:group];
+            } else if ([ad inLine] != nil) {
                 NSArray<HyBidVASTCreative *> *creatives = [[ad inLine] creatives];
-                for (HyBidVASTCreative *creative in creatives) {
-                    if ([creative companionAds] != nil) {
-                        companionAds = [creative companionAds];
-                        for (HyBidVASTCompanion *companion in [companionAds companions]) {
-                            [self.endCardManager addCompanion:companion];
-                        }
-                    }
-                }
+                [self addCompanionsFromCreatives:creatives dispatchGroup:group];
             }
         }
     }
-    
-    NSArray<HyBidVASTEndCard *> *endCards = [[NSArray alloc] initWithArray:[self.endCardManager endCards]];
-    return endCards;
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        NSArray<HyBidVASTEndCard *> *endCards = [self.endCardManager endCards];
+        if (completion) {
+            completion(endCards);
+        }
+    });
 }
 
 - (void)setMediationVendor:(NSString *)mediationVendor
@@ -712,28 +699,34 @@ NSInteger const PNLiteResponseStatusOK = 200;
     }
 }
 
-- (void)reportEvent:(NSString *)eventType withProperties:(NSMutableDictionary *)properties {
-    NSString *adFormat;
+- (NSString *)getAdFormat {
     if ([self isRewarded]) {
-        adFormat = HyBidReportingAdFormat.REWARDED;
+        self.adFormat = HyBidReportingAdFormat.REWARDED;
     } else {
         if ([[self adSize] isEqualTo:HyBidAdSize.SIZE_INTERSTITIAL]) {
-            adFormat = HyBidReportingAdFormat.FULLSCREEN;
+            self.adFormat = HyBidReportingAdFormat.FULLSCREEN;
         } else if ([[self adSize] isEqualTo:HyBidAdSize.SIZE_NATIVE]) {
-            adFormat = HyBidReportingAdFormat.NATIVE;
+            self.adFormat = HyBidReportingAdFormat.NATIVE;
         } else {
-            adFormat = HyBidReportingAdFormat.BANNER;
-            if ([self adSize].description.length > 0) {
-                [properties setObject:[self adSize].description forKey:HyBidReportingCommon.AD_SIZE];
-            }
+            self.adFormat = HyBidReportingAdFormat.BANNER;
         }
     }
+    return self.adFormat;
+}
+
+- (void)reportEvent:(NSString *)eventType withProperties:(NSMutableDictionary *)properties {
+    if ([[self getAdFormat] isEqualToString:HyBidReportingAdFormat.BANNER]) {
+        if ([self adSize].description.length > 0) {
+            [properties setObject:[self adSize].description forKey:HyBidReportingCommon.AD_SIZE];
+        }
+    }
+    
     if (self.requestURL != nil && self.requestURL.absoluteString.length > 0) {
         [properties setObject:self.requestURL.absoluteString forKey:HyBidReportingCommon.AD_REQUEST];
     }
     if ([HyBidSDKConfig sharedConfig].reporting) {
         HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc] initWith:eventType
-                                                                           adFormat:adFormat
+                                                                           adFormat:self.adFormat
                                                                          properties:[NSDictionary dictionaryWithDictionary: properties]];
         [[HyBid reportingManager] reportEventFor:reportingEvent];
     }

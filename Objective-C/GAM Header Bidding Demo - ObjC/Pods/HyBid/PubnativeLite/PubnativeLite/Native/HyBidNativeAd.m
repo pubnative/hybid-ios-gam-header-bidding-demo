@@ -1,23 +1,7 @@
+// 
+// HyBid SDK License
 //
-//  Copyright © 2018 PubNative. All rights reserved.
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
+// https://github.com/pubnative/pubnative-hybid-ios-sdk/blob/main/LICENSE
 //
 
 #import "HyBidNativeAd.h"
@@ -29,12 +13,10 @@
 #import "HyBidAdImpression.h"
 #import "UIApplication+PNLiteTopViewController.h"
 #import <WebKit/WebKit.h>
-#import "HyBidSKAdNetworkViewController.h"
 #import "HyBidURLDriller.h"
 #import "HyBid.h"
 #import "HyBidSKAdNetworkParameter.h"
 #import "HyBidCustomClickUtil.h"
-#import "HyBidSKAdNetworkViewController.h"
 #import "HyBidStoreKitUtils.h"
 #import "PNLiteData.h"
 
@@ -53,7 +35,7 @@
 NSString * const PNLiteNativeAdBeaconImpression = @"impression";
 NSString * const PNLiteNativeAdBeaconClick = @"click";
 
-@interface HyBidNativeAd () <PNLiteImpressionTrackerDelegate, HyBidContentInfoViewDelegate, HyBidURLDrillerDelegate, SKStoreProductViewControllerDelegate, HyBidInternalWebBrowserDelegate>
+@interface HyBidNativeAd () <PNLiteImpressionTrackerDelegate, HyBidContentInfoViewDelegate, HyBidURLDrillerDelegate, HyBidInterruptionDelegate, PercentVisibleDelegate>
 
 @property (nonatomic, strong) PNLiteImpressionTracker *impressionTracker;
 @property (nonatomic, strong) NSDictionary *trackingExtras;
@@ -67,6 +49,7 @@ NSString * const PNLiteNativeAdBeaconClick = @"click";
 @property (nonatomic, assign) NSInteger remainingFetchableAssets;
 @property (nonatomic, strong) HyBidNativeAdRenderer *renderer;
 @property (nonatomic, strong) NSMutableDictionary *sessionReportingProperties;
+@property (nonatomic, strong) HyBidAdAttributionCustomClickAdsWrapper* aakCustomClickAd;
 
 @end
 
@@ -89,6 +72,7 @@ NSString * const PNLiteNativeAdBeaconClick = @"click";
     self.delegate = nil;
     self.fetchDelegate = nil;
     self.sessionReportingProperties = nil;
+    self.aakCustomClickAd = nil;
 }
 
 #pragma mark HyBidNativeAd
@@ -98,6 +82,9 @@ NSString * const PNLiteNativeAdBeaconClick = @"click";
     if (self) {
         self.ad = ad;
         self.sessionReportingProperties = [NSMutableDictionary new];
+        HyBidInterruptionHandler.shared.delegate = self;
+        self.aakCustomClickAd = [[HyBidAdAttributionCustomClickAdsWrapper alloc] initWithAd:self.ad
+                                                                                   adFormat:HyBidReportingAdFormat.NATIVE];
     }
     return self;
 }
@@ -308,6 +295,7 @@ NSString * const PNLiteNativeAdBeaconClick = @"click";
     self.delegate = delegate;
     [self startTrackingImpressionWithView:view];
     [self startTrackingClicksWithView:view withClickableViews:clickableViews];
+    [self.aakCustomClickAd startImpressionWithAdView:view];
 }
 
 - (void)startTrackingImpressionWithView:(UIView *)view {
@@ -318,6 +306,7 @@ NSString * const PNLiteNativeAdBeaconClick = @"click";
     } else {
         if(!self.impressionTracker) {
             self.impressionTracker = [[PNLiteImpressionTracker alloc] init];
+            self.impressionTracker.visibilityTracker.visibilityDelegate = self;
             [self.impressionTracker determineViewbilityRemoteConfig:self.ad];
             self.impressionTracker.delegate = self;
         }
@@ -330,9 +319,14 @@ NSString * const PNLiteNativeAdBeaconClick = @"click";
         
         [self.impressionTracker addView:view];
         
-        #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 140500
-            [[HyBidAdImpression sharedInstance] startImpressionForAd:self.ad];
-        #endif
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 140500
+        [[HyBidAdImpression sharedInstance] startSKANImpressionForAd:self.ad];
+#endif
+        
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 170400
+        [[HyBidAdImpression sharedInstance] startAAKImpressionForAd:self.ad adFormat:HyBidReportingAdFormat.NATIVE];
+#endif
+        
     }
 }
 
@@ -367,8 +361,13 @@ NSString * const PNLiteNativeAdBeaconClick = @"click";
     self.impressionTracker = nil;
     
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 140500
-    [[HyBidAdImpression sharedInstance] endImpressionForAd:self.ad];
+    [[HyBidAdImpression sharedInstance] endSKANImpressionForAd:self.ad];
 #endif
+    
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 170400
+    [[HyBidAdImpression sharedInstance] endAAKImpressionForAd:self.ad adFormat:HyBidReportingAdFormat.NATIVE];
+#endif
+    
 }
 
 - (void)stopTrackingClicks {
@@ -385,39 +384,48 @@ NSString * const PNLiteNativeAdBeaconClick = @"click";
         [self invokeDidClick];
         [self confirmBeaconsWithType:PNLiteNativeAdBeaconClick];
         
-        HyBidSkAdNetworkModel* skAdNetworkModel = self.ad.isUsingOpenRTB ? [self.ad getOpenRTBSkAdNetworkModel] : [self.ad getSkAdNetworkModel];
-        
         NSString *customUrl = [HyBidCustomClickUtil extractPNClickUrl:self.clickUrl];
         if (customUrl != nil) {
             [self openBrowser:customUrl navigationType:HyBidWebBrowserNavigationExternalValue];
-        } else if (skAdNetworkModel) {
-            NSMutableDictionary* productParams = [[skAdNetworkModel getStoreKitParameters] mutableCopy];
+            return;
+        }
+        
+        if(![self.aakCustomClickAd adHasCustomMarketPlace]){
+            [self triggerClickFlow];
+        } else {
+            [self.aakCustomClickAd handlingCustomMarketPlaceWithCompletion:^(BOOL successful) {
+                if (!successful) { [self triggerClickFlow]; }
+            }];
+        }
+    }
+}
+
+- (void)triggerClickFlow {
+    HyBidSkAdNetworkModel* skAdNetworkModel = self.ad.isUsingOpenRTB ? [self.ad getOpenRTBSkAdNetworkModel] : [self.ad getSkAdNetworkModel];
+    
+    if (skAdNetworkModel) {
+        NSMutableDictionary* productParams = [[skAdNetworkModel getStoreKitParameters] mutableCopy];
+        
+        [HyBidStoreKitUtils insertFidelitiesIntoDictionaryIfNeeded:productParams];
+        
+        if ([productParams count] > 0 && [skAdNetworkModel isSKAdNetworkIDVisible:productParams]) {
+            [[HyBidURLDriller alloc] startDrillWithURLString:self.clickUrl delegate:self];
             
-            [HyBidStoreKitUtils insertFidelitiesIntoDictionaryIfNeeded:productParams];
-            
-            if ([productParams count] > 0 && [skAdNetworkModel isSKAdNetworkIDVisible:productParams]) {
-                [[HyBidURLDriller alloc] startDrillWithURLString:self.clickUrl delegate:self];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    HyBidSKAdNetworkViewController *skAdnetworkViewController = [[HyBidSKAdNetworkViewController alloc] initWithProductParameters: [HyBidStoreKitUtils cleanUpProductParams:productParams] delegate: self];
-                    [skAdnetworkViewController presentSKStoreProductViewController:^(BOOL success) {
-                        
-                    }];
-                });
-            } else {
-                [self openBrowser:self.clickUrl navigationType:self.ad.navigationMode];
-            }
+            [HyBidSKAdNetworkViewController.shared presentStoreKitViewWithProductParameters:[HyBidStoreKitUtils cleanUpProductParams:productParams] adFormat:HyBidReportingAdFormat.NATIVE isAutoStoreKitView:NO ad:self.ad];
         } else {
             [self openBrowser:self.clickUrl navigationType:self.ad.navigationMode];
         }
+    } else {
+        [self openBrowser:self.clickUrl navigationType:self.ad.navigationMode];
     }
 }
 
 - (void)openBrowser:(NSString*)url navigationType:(NSString *)navigationType {
     
-    HyBidWebBrowserNavigation navigation = [HyBidInternalWebBrowserNavigationController.shared webBrowserNavigationBehaviourFromString: navigationType];
+    HyBidWebBrowserNavigation navigation = [HyBidInternalWebBrowser.shared webBrowserNavigationBehaviourFromString: navigationType];
     
     if (navigation == HyBidWebBrowserNavigationInternal) {
-        [HyBidInternalWebBrowserNavigationController.shared navigateToURL:url delegate:self];
+        [HyBidInternalWebBrowser.shared navigateToURL:url];
     } else {
         [[UIApplication sharedApplication] openURL:[NSURL URLWithString:url] options:@{} completionHandler:nil];
     }
@@ -692,13 +700,11 @@ NSString * const PNLiteNativeAdBeaconClick = @"click";
     }
 }
 
-#pragma mark SKStoreProductViewControllerDelegate
+#pragma mark - Visibility Delegate
 
-- (void)productViewControllerDidFinish:(SKStoreProductViewController *)viewController {
-    if ([HyBidSDKConfig sharedConfig].reporting) {
-        HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.STOREKIT_PRODUCT_VIEW_DISMISS adFormat:HyBidReportingAdFormat.NATIVE properties:nil];
-        [[HyBid reportingManager] reportEventFor:reportingEvent];
-    }
+- (void)percentVisibleDidChange:(CGFloat)newValue {
+    self.adSessionData.viewability = [NSNumber numberWithFloat:newValue];
+    [ATOMManager fireAdSessionEventWithData:self.adSessionData];
 }
 
 @end

@@ -1,23 +1,7 @@
+// 
+// HyBid SDK License
 //
-//  Copyright © 2021 PubNative. All rights reserved.
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
+// https://github.com/pubnative/pubnative-hybid-ios-sdk/blob/main/LICENSE
 //
 
 #import "HyBidConfigManager.h"
@@ -49,38 +33,24 @@ NSString *const HyBidConfigProductionURL = @"https://sdkc.vervegroupinc.net/conf
 @implementation HyBidConfigManager
 
 - (void)dealloc {
+    self.HyBidConfigURL = nil;
 }
 
 - (instancetype)init {
     self = [super init];
     if (self) {
+        self.HyBidConfigURL = [NSString stringWithFormat:@"%@%@",HyBidConfigProductionURL, [HyBidSDKConfig sharedConfig].appToken];
     }
     return self;
 }
 
-+ (instancetype)sharedManager {
-    static HyBidConfigManager *instance;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        instance = [[HyBidConfigManager alloc] init];
-    });
-    return instance;
-}
-
-- (void)setHyBidConfigURLToProduction {
-    self.HyBidConfigURL = [NSString stringWithFormat:@"%@%@",HyBidConfigProductionURL, [HyBidSDKConfig sharedConfig].appToken];
-}
-
-- (void)setHyBidConfigURLToTestingWithURL:(NSString *)url {
-    self.HyBidConfigURL = url;
-}
-
 - (void)requestConfigWithCompletion:(ConfigManagerCompletionBlock)completion {
     self.completionBlock = completion;
-    if (self.HyBidConfigURL == nil || self.HyBidConfigURL.length == 0) {
-        [self setHyBidConfigURLToProduction];
+    if ([HyBidSDKConfig sharedConfig].customRemoteConfigURL == nil || [HyBidSDKConfig sharedConfig].customRemoteConfigURL.length == 0) {
+        [[PNLiteHttpRequest alloc] startWithUrlString:self.HyBidConfigURL withMethod:@"GET" delegate:self];
+    } else {
+        [[PNLiteHttpRequest alloc] startWithUrlString:[HyBidSDKConfig sharedConfig].customRemoteConfigURL withMethod:@"GET" delegate:self];
     }
-    [[PNLiteHttpRequest alloc] startWithUrlString:self.HyBidConfigURL withMethod:@"GET" delegate:self];
 }
 
 - (NSDictionary *)createDictionaryFromData:(NSData *)data {

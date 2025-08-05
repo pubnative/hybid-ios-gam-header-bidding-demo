@@ -1,26 +1,12 @@
+// 
+// HyBid SDK License
 //
- //  Copyright © 2020 PubNative. All rights reserved.
- //
- //  Permission is hereby granted, free of charge, to any person obtaining a copy
- //  of this software and associated documentation files (the "Software"), to deal
- //  in the Software without restriction, including without limitation the rights
- //  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- //  copies of the Software, and to permit persons to whom the Software is
- //  furnished to do so, subject to the following conditions:
- //
- //  The above copyright notice and this permission notice shall be included in
- //  all copies or substantial portions of the Software.
- //
- //  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- //  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- //  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- //  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- //  THE SOFTWARE.
- //
+// https://github.com/pubnative/pubnative-hybid-ios-sdk/blob/main/LICENSE
+//
 
- #import "HyBidOpenRTBBaseModel.h"
+#import "HyBidOpenRTBBaseModel.h"
+#import "HyBidOpenRTBDataModel.h"
+#import "PNLiteMeta.h"
 
  @implementation HyBidOpenRTBBaseModel
 
@@ -31,7 +17,9 @@
  - (instancetype)initWithDictionary:(NSDictionary *)dictionary {
      self = [super init];
      if (self) {
-         self.dictionary = dictionary;
+         if ([dictionary isKindOfClass:[NSDictionary class]]) {
+             self.dictionary = dictionary;
+         }
      }
      return self;
  }
@@ -64,8 +52,24 @@
      NSMutableArray *result;
      if(dictionary && [dictionary isKindOfClass: [NSDictionary class]]) {
          result = [NSMutableArray array];
-         NSObject *value = [[self alloc] initWithDictionary:dictionary];
-         [result addObject:value];
+         NSArray *dictKeys = [dictionary allKeys];
+         
+         if (![dictKeys containsObject:PNLiteMeta.adattributionkit]) {
+             NSObject *value = [[self alloc] initWithDictionary:dictionary];
+             [result addObject:value];
+             return result;
+         }
+         
+         //Adding each key and its value as array element
+         for (NSString *key in dictKeys) {
+             if ([dictionary[key] isKindOfClass:[NSDictionary class]]) {
+                 //Setting prefered value for adattributionkit to avoid SKAN data overriding it
+                 NSObject *value = [key isEqualToString:PNLiteMeta.adattributionkit]
+                 ? [[HyBidOpenRTBDataModel alloc] initWithDictionary:dictionary preferedValue:key]
+                 : [[HyBidOpenRTBDataModel alloc] initWithDictionary:dictionary];
+                 [result addObject:value];
+             }
+         }
      }
      return result;
  }

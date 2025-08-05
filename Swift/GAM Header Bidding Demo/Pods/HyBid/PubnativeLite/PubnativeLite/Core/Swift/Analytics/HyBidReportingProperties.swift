@@ -1,23 +1,7 @@
+// 
+// HyBid SDK License
 //
-//  Copyright © 2020 PubNative. All rights reserved.
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
+// https://github.com/pubnative/pubnative-hybid-ios-sdk/blob/main/LICENSE
 //
 
 import Foundation
@@ -92,6 +76,7 @@ public class EventType: HyBidReportingProperties  {
     @objc public static let LOAD = "load"
     @objc public static let LOAD_FAIL = "load_fail"
     @objc public static let SHOW = "show"
+    @objc public static let REPLAY = "video_replay"
     @objc public static let CACHE = "cache"
     @objc public static let RESPONSE = "response"
     @objc public static let RENDER = "render"
@@ -126,6 +111,18 @@ public class EventType: HyBidReportingProperties  {
     @objc public static let SKOVERLAY_AUTOMATIC_CUSTOM_ENDCARD_CLICK = "skoverlay_automatic_custom_endcard_click"
     @objc public static let AUTO_STORE_KIT_IMPRESSION = "autostorekit_impression"
     @objc public static let AUTO_STORE_KIT_IMPRESSION_ERROR = "autostorekit_impression_error"
+    
+    @objc public static let AD_ATTRIBUTION_KIT_AD_TYPE_MACRO = "[aakType]"
+    @objc public static let AD_ATTRIBUTION_KIT_APP_IMPRESSION = "aak_app_impression_\(AD_ATTRIBUTION_KIT_AD_TYPE_MACRO)"
+    @objc public static let AD_ATTRIBUTION_KIT_APP_IMPRESSION_ERROR = "aak_app_impression_error_\(AD_ATTRIBUTION_KIT_AD_TYPE_MACRO)"
+    @objc public static let AD_ATTRIBUTION_KIT_APP_HANDLE_TAP = "aak_app_handle_tap"
+    @objc public static let AD_ATTRIBUTION_KIT_APP_HANDLE_TAP_ERROR = "aak_app_handle_tap_error"
+    @objc public static let AD_ATTRIBUTION_KIT_APP_IMPRESSION_BEGIN_VIEW = "aak_app_impression_begin_view"
+    @objc public static let AD_ATTRIBUTION_KIT_APP_IMPRESSION_BEGIN_VIEW_ERROR = "aak_app_impression_begin_view_error"
+    @objc public static let AD_ATTRIBUTION_KIT_APP_IMPRESSION_END_VIEW = "aak_app_impression_end_view"
+    @objc public static let AD_ATTRIBUTION_KIT_APP_IMPRESSION_END_VIEW_ERROR = "aak_app_impression_end_view_error"
+    
+    @objc public static let AD_SESSION_DATA_SHARED_TO_ATOM = "ad_session_data_shared_to_atom"
 }
 
 @objc(HyBidReportingCreativeType)

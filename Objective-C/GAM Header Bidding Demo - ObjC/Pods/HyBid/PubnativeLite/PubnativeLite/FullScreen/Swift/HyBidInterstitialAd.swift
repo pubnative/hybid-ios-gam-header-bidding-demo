@@ -1,23 +1,7 @@
+// 
+// HyBid SDK License
 //
-//  Copyright © 2020 PubNative. All rights reserved.
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
+// https://github.com/pubnative/pubnative-hybid-ios-sdk/blob/main/LICENSE
 //
 
 import Foundation
@@ -70,6 +54,7 @@ public class HyBidInterstitialAd: NSObject {
     private var renderErrorReportingProperties: [String: Any] = [:]
     private var sessionReportingProperties: [String: Any] = [:]
     private var closeOnFinish = false
+    private var adSessionData: HyBidAdSessionData?
     
     func cleanUp() {
         self.ad = nil
@@ -101,6 +86,7 @@ public class HyBidInterstitialAd: NSObject {
         self.htmlSkipOffset = HyBidConstants.interstitialHtmlSkipOffset
         self.videoSkipOffset = HyBidConstants.videoSkipOffset
         self.closeOnFinish = HyBidConstants.interstitialCloseOnFinish
+        self.adSessionData = HyBidAdSessionData()
     }
     
     @objc
@@ -227,6 +213,9 @@ public class HyBidInterstitialAd: NSObject {
             }
             if initialLoadTimestamp < adExpireTime {
                 self.interstitialPresenter?.show()
+                if let adSessionData = self.adSessionData {
+                    ATOMManager.fireAdSessionEvent(data: adSessionData)
+                }
             } else {
                 HyBidLogger.errorLog(fromClass: String(describing: HyBidInterstitialAd.self), fromMethod: #function, withMessage: "Ad has expired")
                 self.cleanUp()
@@ -316,6 +305,7 @@ public class HyBidInterstitialAd: NSObject {
             }
             return
         } else {
+            self.interstitialPresenter?.adSessionData = self.adSessionData
             self.interstitialPresenter?.load()
         }
     }
@@ -389,7 +379,10 @@ public class HyBidInterstitialAd: NSObject {
         guard let delegate = self.delegate else { return }
         delegate.interstitialDidTrackImpression()
         if #available(iOS 14.5, *) {
-            HyBidAdImpression.sharedInstance().start(for: self.ad)
+            HyBidAdImpression.sharedInstance().startSKANImpression(for: self.ad)
+        }
+        if #available(iOS 17.4, *) {
+            HyBidAdImpression.sharedInstance().startAAKImpression(for: self.ad, adFormat: AdFormat.FULLSCREEN)
         }
     }
     
@@ -481,6 +474,7 @@ extension HyBidInterstitialAd {
         
         if let ad = ad {
             self.ad = ad
+            self.adSessionData = ATOMManager.createAdSessionData(from: request, ad: ad)
             self.determineSkipOffsetValuesFor(ad)
             self.determineCloseOnFinishFor(ad)
             self.renderAd(ad: ad)
@@ -528,7 +522,10 @@ extension HyBidInterstitialAd {
     func interstitialPresenterDidDismiss(_ interstitialPresenter: HyBidInterstitialPresenter!) {
         self.invokeDidDismiss()
         if #available(iOS 14.5, *) {
-            HyBidAdImpression.sharedInstance().end(for: self.ad)
+            HyBidAdImpression.sharedInstance().endSKANImpression(for: self.ad)
+        }
+        if #available(iOS 17.4, *) {
+            HyBidAdImpression.sharedInstance().endAAKImpression(for: self.ad, adFormat: AdFormat.FULLSCREEN)
         }
     }
     
@@ -543,6 +540,7 @@ extension HyBidInterstitialAd {
 extension HyBidInterstitialAd {
     func signalDataDidFinish(with ad: HyBidAd) {
         self.ad = ad
+        self.adSessionData = ATOMManager.createAdSessionData(from: nil, ad: ad)
         self.renderAd(ad: ad)
     }
     

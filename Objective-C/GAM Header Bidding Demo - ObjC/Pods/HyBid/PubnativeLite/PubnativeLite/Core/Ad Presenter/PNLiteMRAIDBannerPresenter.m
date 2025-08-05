@@ -1,23 +1,7 @@
+// 
+// HyBid SDK License
 //
-//  Copyright © 2018 PubNative. All rights reserved.
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
+// https://github.com/pubnative/pubnative-hybid-ios-sdk/blob/main/LICENSE
 //
 
 #import "PNLiteMRAIDBannerPresenter.h"
@@ -25,7 +9,6 @@
 #import "HyBidMRAIDServiceDelegate.h"
 #import "HyBidMRAIDServiceProvider.h"
 #import "UIApplication+PNLiteTopViewController.h"
-#import "HyBidSKAdNetworkViewController.h"
 #import "HyBidURLDriller.h"
 #import "HyBidError.h"
 #import "HyBid.h"
@@ -42,11 +25,12 @@
     #import "HyBid-Swift.h"
 #endif
 
-@interface PNLiteMRAIDBannerPresenter () <HyBidMRAIDViewDelegate, HyBidMRAIDServiceDelegate, HyBidURLDrillerDelegate, SKStoreProductViewControllerDelegate>
+@interface PNLiteMRAIDBannerPresenter () <HyBidMRAIDViewDelegate, HyBidMRAIDServiceDelegate, HyBidURLDrillerDelegate, HyBidInterruptionDelegate>
 
 @property (nonatomic, strong) HyBidMRAIDServiceProvider *serviceProvider;
 @property (nonatomic, retain) HyBidMRAIDView *mraidView;
 @property (nonatomic, strong) HyBidAd *adModel;
+@property (nonatomic, strong) HyBidAdAttributionCustomClickAdsWrapper* aakCustomClickAd;
 
 @end
 
@@ -55,12 +39,14 @@
 - (void)dealloc {
     self.serviceProvider = nil;
     self.adModel = nil;
+    self.aakCustomClickAd = nil;
 }
 
 - (instancetype)initWithAd:(HyBidAd *)ad {
     self = [super init];
     if (self) {
         self.adModel = ad;
+        self.aakCustomClickAd = [[HyBidAdAttributionCustomClickAdsWrapper alloc] initWithAd:self.ad adFormat:HyBidReportingAdFormat.BANNER];
     }
     return self;
 }
@@ -83,7 +69,8 @@
                                          rootViewController:[UIApplication sharedApplication].topViewController
                                                 contentInfo:self.adModel.contentInfo
                                                  skipOffset:0
-                                                 isEndcard:NO];
+                                                 isEndcard:NO
+                                 shouldHandleInterruptions:YES];
 }
 
 - (void)loadMarkupWithSize:(HyBidAdSize *)adSize {
@@ -100,7 +87,8 @@
                                          rootViewController:[UIApplication sharedApplication].topViewController
                                                 contentInfo:self.adModel.contentInfo
                                                  skipOffset:0
-                                                 isEndcard:NO];
+                                                 isEndcard:NO
+                                 shouldHandleInterruptions:YES];
 }
 
 - (void)startTracking {
@@ -118,6 +106,16 @@
 - (void)handleClick:(NSString*) url {
     [self.delegate adPresenterDidClick:self];
     
+    if(![self.aakCustomClickAd adHasCustomMarketPlace]){
+        [self triggerClickFlowWithUrl:url];
+    } else {
+        [self.aakCustomClickAd handlingCustomMarketPlaceWithCompletion:^(BOOL successful) {
+            if (!successful) { [self triggerClickFlowWithUrl:url]; }
+        }];
+    }
+}
+
+- (void)triggerClickFlowWithUrl:(NSString *)url {
     HyBidSkAdNetworkModel* skAdNetworkModel = self.ad.isUsingOpenRTB ? [self.adModel getOpenRTBSkAdNetworkModel] : [self.adModel getSkAdNetworkModel];
     
     NSString *customUrl = [HyBidCustomClickUtil extractPNClickUrl:url];
@@ -130,14 +128,8 @@
         
         if ([productParams count] > 0 && [skAdNetworkModel isSKAdNetworkIDVisible:productParams]) {
             [[HyBidURLDriller alloc] startDrillWithURLString:url delegate:self];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                HyBidSKAdNetworkViewController *skAdnetworkViewController = [[HyBidSKAdNetworkViewController alloc] initWithProductParameters: [HyBidStoreKitUtils cleanUpProductParams:productParams] delegate: self];
-                [skAdnetworkViewController presentSKStoreProductViewController:^(BOOL success) {
-                    if (success && [self.delegate respondsToSelector:@selector(adPresenterDidDisappear:)]) {
-                        [self.delegate adPresenterDidDisappear:self];
-                    }
-                }];
-            });
+            
+            [HyBidSKAdNetworkViewController.shared presentStoreKitViewWithProductParameters:[HyBidStoreKitUtils cleanUpProductParams:productParams] adFormat:HyBidReportingAdFormat.BANNER isAutoStoreKitView:NO ad:self.ad];
         } else {
             [self openBrowser:url navigationType:self.ad.navigationMode];
         }
@@ -148,11 +140,11 @@
 
 - (void)openBrowser:(NSString*)url navigationType:(NSString *)navigationType {
     
-    HyBidWebBrowserNavigation navigation = [HyBidInternalWebBrowserNavigationController.shared webBrowserNavigationBehaviourFromString: navigationType];
+    HyBidWebBrowserNavigation navigation = [HyBidInternalWebBrowser.shared webBrowserNavigationBehaviourFromString: navigationType];
     
     if (navigation == HyBidWebBrowserNavigationInternal) {
         if (!self.mraidView) { return; }
-        [HyBidInternalWebBrowserNavigationController.shared navigateToURL:url delegate:self.mraidView];
+        [HyBidInternalWebBrowser.shared navigateToURL:url];
     } else {
         [self.serviceProvider openBrowser:url];
     }
@@ -162,6 +154,7 @@
 
 - (void)mraidViewAdReady:(HyBidMRAIDView *)mraidView {
     [self.delegate adPresenter:self didLoadWithAd:mraidView];
+    [self.aakCustomClickAd startImpressionWithAdView: mraidView];
 }
 
 - (void)mraidViewAdFailed:(HyBidMRAIDView *)mraidView {
@@ -218,17 +211,18 @@
     [self.serviceProvider storePicture:urlString];
 }
 
-#pragma mark SKStoreProductViewControllerDelegate
+#pragma mark HyBidInterruptionDelegate
 
-- (void)productViewControllerDidFinish:(SKStoreProductViewController *)viewController {
-    if ([HyBidSDKConfig sharedConfig].reporting) {
-        HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.STOREKIT_PRODUCT_VIEW_DISMISS adFormat:HyBidReportingAdFormat.BANNER properties:nil];
-        [[HyBid reportingManager] reportEventFor:reportingEvent];
+- (void)adHasNoFocus {
+    if ([self.delegate respondsToSelector:@selector(adPresenterDidDisappear:)]) {
+        [self.delegate adPresenterDidDisappear:self];
     }
+}
+
+- (void)adHasFocus {
     if ([self.delegate respondsToSelector:@selector(adPresenterDidAppear:)]) {
         [self.delegate adPresenterDidAppear:self];
     }
-    [viewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

@@ -1,23 +1,7 @@
+// 
+// HyBid SDK License
 //
-//  Copyright © 2020 PubNative. All rights reserved.
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
+// https://github.com/pubnative/pubnative-hybid-ios-sdk/blob/main/LICENSE
 //
 
 #import "PNLiteRewardedPresenterDecorator.h"
@@ -119,9 +103,13 @@
 }
 
 - (void)rewardedPresenterDidShow:(HyBidRewardedPresenter *)rewardedPresenter {
-    if (self.rewardedPresenterDelegate && [self.rewardedPresenterDelegate respondsToSelector:@selector(rewardedPresenterDidShow:)] && !self.adTracker.impressionTracked) {
-        [self.adTracker trackImpressionWithAdFormat:HyBidReportingAdFormat.REWARDED];
-        [self.rewardedPresenterDelegate rewardedPresenterDidShow:rewardedPresenter];
+    if (self.rewardedPresenterDelegate && [self.rewardedPresenterDelegate respondsToSelector:@selector(rewardedPresenterDidShow:)]) {
+        
+        if (!self.adTracker.impressionTracked) {
+            [self.adTracker trackImpressionWithAdFormat:HyBidReportingAdFormat.REWARDED];
+            [self.rewardedPresenterDelegate rewardedPresenterDidShow:rewardedPresenter];
+        }
+
         [self.skoverlay addObservers];
         [self.skoverlay presentWithAd:rewardedPresenter.ad];
         [self.customCTA presentCustomCTAWithDelay];
@@ -172,7 +160,7 @@
 - (void)rewardedPresenterDidDismiss:(HyBidRewardedPresenter *)rewardedPresenter {
     if (self.rewardedPresenterDelegate && [self.rewardedPresenterDelegate respondsToSelector:@selector(rewardedPresenterDidDismiss:)]) {
         if ([HyBidSDKConfig sharedConfig].reporting) {
-            HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.REWARDED_CLOSED adFormat:HyBidReportingAdFormat.FULLSCREEN properties:nil];
+            HyBidReportingEvent* reportingEvent = [[HyBidReportingEvent alloc]initWith:HyBidReportingEventType.REWARDED_CLOSED adFormat:HyBidReportingAdFormat.REWARDED properties:nil];
             [[HyBid reportingManager] reportEventFor:reportingEvent];
         }
         [self.rewardedPresenterDelegate rewardedPresenterDidDismiss:rewardedPresenter];
@@ -208,17 +196,8 @@
     }
 }
 
-- (void)rewardedPresenterDidAppear:(HyBidRewardedPresenter *)rewardedPresenter {
-    [self.skoverlay presentWithAd:rewardedPresenter.ad];
-}
-
-- (void)rewardedPresenterDidDisappear:(HyBidRewardedPresenter *)rewardedPresenter {
-    [self.skoverlay dismissEntirely:NO withAd:rewardedPresenter.ad causedByAutoCloseTimerCompletion:NO];
-}
-
-- (void)rewardedPresenterPresentsSKOverlay:(HyBidRewardedPresenter *)rewardedPresenter {
-    [self.skoverlay presentWithAd:rewardedPresenter.ad];
-}
+- (void)rewardedPresenterDidAppear:(HyBidRewardedPresenter *)rewardedPresenter {}
+- (void)rewardedPresenterDidDisappear:(HyBidRewardedPresenter *)rewardedPresenter {}
 
 - (void)rewardedPresenterDismissesSKOverlay:(HyBidRewardedPresenter *)rewardedPresenter {
     [self.skoverlay dismissEntirely:YES withAd:rewardedPresenter.ad causedByAutoCloseTimerCompletion:NO];
@@ -245,6 +224,23 @@
 
 - (void)rewardedPresenterDidClickCustomCTAOnEndCard:(BOOL)OnEndCard {
     [self.adTracker trackCustomCTAClickWithAdFormat:HyBidReportingAdFormat.REWARDED onEndCard:OnEndCard];
+}
+
+- (void)rewardedPresenterDidReplay:(HyBidRewardedPresenter *)rewardedPresenter viewController:(UIViewController *)viewController {
+    [self rewardedPresenterDismissesSKOverlay:rewardedPresenter];
+    
+    if (self.rewardedPresenter.ad.skoverlayEnabled && [self.rewardedPresenter.ad.skoverlayEnabled boolValue]) {
+        self.skoverlay = [[HyBidSKOverlay alloc] initWithAd:rewardedPresenter.ad
+                                                 isRewarded:YES
+                                                   delegate:rewardedPresenter.skoverlayDelegate];
+    }
+    
+    if ([HyBidCustomCTAView isCustomCTAValidWithAd: rewardedPresenter.ad]) {
+        self.customCTA = [[HyBidCustomCTAView alloc] initWithAd:rewardedPresenter.ad viewController: viewController delegate:rewardedPresenter.customCTADelegate adFormat:HyBidReportingAdFormat.REWARDED];
+    }
+    
+    [self rewardedPresenterDidShow:rewardedPresenter];
+    [self.adTracker trackReplayClickWithAdFormat:HyBidReportingAdFormat.REWARDED];
 }
 
 - (void)impressionDetectedWithView:(UIView *)view {}

@@ -1,23 +1,7 @@
+// 
+// HyBid SDK License
 //
-//  Copyright © 2020 PubNative. All rights reserved.
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
+// https://github.com/pubnative/pubnative-hybid-ios-sdk/blob/main/LICENSE
 //
 
 #import "HyBidOpenRTBDataModel.h"
@@ -36,27 +20,39 @@
 - (instancetype)initWithDictionary:(NSDictionary *)dictionary {
     self = [super initWithDictionary:dictionary];
     if (self) {
-        if (dictionary[@"data"] != nil) {
-            NSMutableDictionary *newDict = [NSMutableDictionary dictionary];
-            self.type = dictionary[@"data"][@"label"];
-            
-            id value = dictionary[@"data"][@"value"];
-            [newDict setObject:value forKey:([self.type isEqual: @"rating"] ? @"number" : @"text")];
-            [newDict removeObjectForKey:@"value"];
-            
-            self.data = newDict;
-        } else if (dictionary[@"img"] != nil) {
-            NSDictionary *typeDict = @{@1: @"icon", @3: @"banner"};
-            self.type = typeDict[dictionary[@"img"][@"type"]];
-            self.data = dictionary[@"img"];
-        } else if (dictionary[@"title"] != nil) {
-            self.type = @"title";
-            self.data = dictionary[@"title"];
-        } else if (dictionary[@"skadn"] != nil) {
-            self.type = [PNLiteMeta skadnetwork];
-            self.data = dictionary[@"skadn"];
+        if ([dictionary isKindOfClass:[NSDictionary class]]) {
+            if (dictionary[@"data"] != nil) {
+                NSMutableDictionary *newDict = [NSMutableDictionary dictionary];
+                self.type = dictionary[@"data"][@"label"];
+                
+                id value = dictionary[@"data"][@"value"];
+                [newDict setObject:value forKey:([self.type isEqual: @"rating"] ? @"number" : @"text")];
+                [newDict removeObjectForKey:@"value"];
+                
+                self.data = newDict;
+            } else if (dictionary[@"img"] != nil) {
+                NSDictionary *typeDict = @{@1: @"icon", @3: @"banner"};
+                self.type = typeDict[dictionary[@"img"][@"type"]];
+                self.data = dictionary[@"img"];
+            } else if (dictionary[@"title"] != nil) {
+                self.type = @"title";
+                self.data = dictionary[@"title"];
+            } else if (dictionary[@"skadn"] != nil) {
+                self.type = [PNLiteMeta skadnetwork];
+                self.data = dictionary[@"skadn"];
+            }
         }
     }
+    return self;
+}
+
+- (instancetype)initWithDictionary:(NSDictionary *)dictionary preferedValue:(NSString *)key {
+    self = [super initWithDictionary:dictionary];
+    if (self && [dictionary isKindOfClass:[NSDictionary class]] && dictionary[key] != nil) {
+        self.type = key;
+        self.data = dictionary[key];
+    }
+    
     return self;
 }
 

@@ -15,6 +15,6 @@ FOUNDATION_EXPORT const unsigned char ATOMVersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <ATOM/PublicHeader.h>
 
-#import "ATOMTCFApi.h"
-#import "ATOMGDPRLocationDetector.h"
-#import "ATOMLGPDLocationDetector.h"
+// Core headers
+#import <ATOM/ATOMGDPRLocationDetector.h>
+#import <ATOM/ATOMLGPDLocationDetector.h>

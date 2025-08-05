@@ -1,7 +1,7 @@
 // swift-interface-format-version: 1.0
-// swift-compiler-version: Apple Swift version 6.0.3 effective-5.10 (swiftlang-6.0.3.1.10 clang-1600.0.30.1)
-// swift-module-flags: -target arm64-apple-ios12.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-bare-slash-regex -module-name ATOM
-// swift-module-flags-ignorable: -no-verify-emitted-module-interface
+// swift-compiler-version: Apple Swift version 6.1 effective-5.10 (swiftlang-6.1.0.110.21 clang-1700.0.13.3)
+// swift-module-flags: -target arm64-apple-ios12.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name ATOM
+// swift-module-flags-ignorable: -no-verify-emitted-module-interface -interface-compiler-version 6.1
 @_exported import ATOM
 import AdSupport
 import AppTrackingTransparency
@@ -153,7 +153,136 @@ extension CoreFoundation.CGFloat : ATOM.DatabaseValueConvertible {
   }
   public static func fromDatabaseValue(_ dbValue: ATOM.DatabaseValue) -> CoreFoundation.CGFloat?
 }
-public struct ATOMSwipeTick {
+public struct ATOMSwipeTick : Swift.Equatable {
+  public static func == (lhs: ATOM.ATOMSwipeTick, rhs: ATOM.ATOMSwipeTick) -> Swift.Bool
+}
+@_hasMissingDesignatedInitializers final public class ATOMConsentDataParser {
+  public static func parse(consentString: Swift.String) throws -> Foundation.Data
+  @objc deinit
+}
+final public class ATOMTCFConsentValidator {
+  final public var maxVendorIdForConsents: ATOM.ATOMVendorIdentifier {
+    get
+  }
+  public init(consentData: Foundation.Data) throws
+  final public func isVendorAllowed(vendorID: ATOM.ATOMVendorIdentifier) -> Swift.Bool
+  final public func isPurposeConsentAllowed(_ purposeId: ATOM.ATOMPurposeIdentifier) -> Swift.Bool
+  @objc deinit
+}
+final public class ATOMTCFConsent {
+  public init(withConsentString consentString: Swift.String) throws
+  final public func isVendorAllowed(_ vendorId: ATOM.ATOMVendorIdentifier) -> Swift.Bool
+  final public func isPurposeAllowed(_ purposeId: ATOM.ATOMPurposeIdentifier) -> Swift.Bool
+  final public func arePurposesAllowed(_ purposeIds: [ATOM.ATOMPurposeIdentifier]) -> Swift.Bool
+  @objc deinit
+}
+public protocol ATOMConsentChecker {
+  func isSubjectToLocationAware() -> Swift.Bool
+}
+public class ATOMGDPRConsentChecker : ATOM.ATOMConsentChecker {
+  public init()
+  public func isSubjectToLocationAware() -> Swift.Bool
+  @objc deinit
+}
+public class ATOMCCPAConsentChecker : ATOM.ATOMConsentChecker {
+  public init()
+  public func isSubjectToLocationAware() -> Swift.Bool
+  @objc deinit
+}
+final public class ATOMConsentSDK {
+  public init(gdprConsentChecker: any ATOM.ATOMConsentChecker = ATOMGDPRConsentChecker(), ccpaConsentChecker: any ATOM.ATOMConsentChecker = ATOMCCPAConsentChecker())
+  public init(withCustomTCFString tcfString: Swift.String, gdprConsentChecker: any ATOM.ATOMConsentChecker = ATOMGDPRConsentChecker()) throws
+  public init(withCustomCCPAString ccpaString: Swift.String, ccpaConsentChecker: any ATOM.ATOMConsentChecker = ATOMCCPAConsentChecker()) throws
+  final public func isSubjectToGDPR() -> Swift.Bool
+  final public func isSubjectToCCPA() -> Swift.Bool
+  final public func isSubjectToRegulation() -> Swift.Bool
+  final public func refreshConsent() throws
+  public static func isSubjectToGDPR(checker: (any ATOM.ATOMConsentChecker)? = nil) -> Swift.Bool
+  public static func isSubjectToCCPA(checker: (any ATOM.ATOMConsentChecker)? = nil) -> Swift.Bool
+  final public func isVendorAllowed(_ vendorID: ATOM.ATOMVendorIdentifier) throws -> Swift.Bool
+  final public func isPurposeAllowed(_ purposeID: ATOM.ATOMPurposeIdentifier) throws -> Swift.Bool
+  final public func arePurposesAllowed(_ purposesID: [ATOM.ATOMPurposeIdentifier]) throws -> Swift.Bool
+  final public func isSaleAllowed() throws -> Swift.Bool
+  final public func isTrackingAllowed(vendorID: ATOM.ATOMVendorIdentifier, purposeIDs: [ATOM.ATOMPurposeIdentifier]) throws -> Swift.Bool
+  @objc deinit
+}
+public typealias ATOMVendorIdentifier = Swift.Int32
+public typealias ATOMPurposeIdentifier = Swift.Int32
+public struct ATOMConsentInfo {
+  public var dateCreated: Foundation.Date {
+    get
+  }
+  public var dateUpdated: Foundation.Date {
+    get
+  }
+  public var cmpId: Swift.Int {
+    get
+  }
+  public var consentScreen: Swift.Int {
+    get
+  }
+  public var consentLanguage: Swift.String {
+    get
+  }
+  public var publisherCC: Swift.String {
+    get
+  }
+  public var vendorListVersion: Swift.Int32 {
+    get
+  }
+  public var tfcPolicyVersion: Swift.Int32 {
+    get
+  }
+  public var isServiceSpecific: Swift.Bool {
+    get
+  }
+  public var useNonStandardTexts: Swift.Bool {
+    get
+  }
+  public var purposeOneTreatment: Swift.Int32 {
+    get
+  }
+  public var purposeConsents: Swift.Set<ATOM.ATOMPurposeIdentifier> {
+    get
+  }
+  public func purposeConsent(forPurposeId purposeId: ATOM.ATOMPurposeIdentifier) -> Swift.Bool
+  public var purposeLegitimateInterests: Swift.Set<ATOM.ATOMPurposeIdentifier> {
+    get
+  }
+  public func purposeLegitimateInterest(forPurposeId purposeId: ATOM.ATOMPurposeIdentifier) -> Swift.Bool
+}
+public enum ATOMConsentError : Swift.Error {
+  case invalidBase64Encoding
+  case parsingFailed
+  case emptyData
+  case invalidFormat
+  case vendorIdOutOfRange
+  case missingTCFConsentString
+  case missingCCPAConsentString
+  case noRegulationRequired
+  public static func == (a: ATOM.ATOMConsentError, b: ATOM.ATOMConsentError) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+extension ATOM.ATOMConsentError : Foundation.LocalizedError {
+  public var errorDescription: Swift.String? {
+    get
+  }
+}
+extension Swift.String {
+  public var base64Padded: Swift.String {
+    get
+  }
+}
+extension Foundation.Data {
+  public func byte(forBit bit: Swift.Int64) -> Swift.Int?
+  public func bytes(fromBit startBit: Swift.Int64, toBit endBit: Swift.Int64) -> [Swift.UInt8]
+  public func data(fromBit startBit: Swift.Int64, toBit endBit: Swift.Int64) -> Foundation.Data
+  public func intValue(fromBit startBit: Swift.Int64, toBit endBit: Swift.Int64) -> Swift.Int64
+  public func intValue(for range: Foundation.NSRange) -> Swift.Int64
+  public func data(for range: Foundation.NSRange) -> Foundation.Data
 }
 public protocol DatabaseWriter : ATOM.DatabaseReader {
   func write<T>(_ updates: (ATOM.Database) throws -> T) throws -> T
@@ -209,7 +338,8 @@ extension UIKit.UIWindow {
 extension UIKit.UIWindow {
   @objc @_Concurrency.MainActor @preconcurrency dynamic public func swizzledSendEvent(_ event: UIKit.UIEvent)
 }
-public struct ATOMPinchTick {
+public struct ATOMPinchTick : Swift.Equatable {
+  public static func == (lhs: ATOM.ATOMPinchTick, rhs: ATOM.ATOMPinchTick) -> Swift.Bool
 }
 public struct FTS4 : ATOM.VirtualTableModule {
   public init()
@@ -255,8 +385,8 @@ public struct SQLUnaryOperator : Swift.Hashable {
   public let sql: Swift.String
   public let needsRightSpace: Swift.Bool
   public init(_ sql: Swift.String, needsRightSpace: Swift.Bool)
-  public func hash(into hasher: inout Swift.Hasher)
   public static func == (a: ATOM.SQLUnaryOperator, b: ATOM.SQLUnaryOperator) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
   public var hashValue: Swift.Int {
     get
   }
@@ -275,8 +405,8 @@ public struct SQLBinaryOperator : Swift.Hashable {
   public var negated: ATOM.SQLBinaryOperator? {
     get
   }
-  public func hash(into hasher: inout Swift.Hasher)
   public static func == (a: ATOM.SQLBinaryOperator, b: ATOM.SQLBinaryOperator) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
   public var hashValue: Swift.Int {
     get
   }
@@ -297,8 +427,8 @@ public struct SQLAssociativeBinaryOperator : Swift.Hashable {
   public let neutralValue: ATOM.DatabaseValue
   public let strictlyAssociative: Swift.Bool
   public init(sql: Swift.String, neutralValue: ATOM.DatabaseValue, strictlyAssociative: Swift.Bool)
-  public func hash(into hasher: inout Swift.Hasher)
   public static func == (a: ATOM.SQLAssociativeBinaryOperator, b: ATOM.SQLAssociativeBinaryOperator) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
   public var hashValue: Swift.Int {
     get
   }
@@ -309,8 +439,8 @@ extension Swift.Sequence where Self.Element == any ATOM.SQLExpression {
 public struct SQLFunctionName : Swift.Hashable {
   public var sql: Swift.String
   public init(_ sql: Swift.String)
-  public func hash(into hasher: inout Swift.Hasher)
   public static func == (a: ATOM.SQLFunctionName, b: ATOM.SQLFunctionName) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
   public var hashValue: Swift.Int {
     get
   }
@@ -612,39 +742,18 @@ extension ATOM.FetchRequest where Self.RowDecoder : ATOM.DatabaseValueConvertibl
   public func fetchAll(_ db: ATOM.Database) throws -> [Self.RowDecoder]
   public func fetchOne(_ db: ATOM.Database) throws -> Self.RowDecoder?
 }
-#if compiler(>=5.3) && $NoncopyableGenerics
 extension Swift.Optional where Wrapped : ATOM.DatabaseValueConvertible {
   public static func fetchCursor(_ statement: ATOM.SelectStatement, arguments: ATOM.StatementArguments? = nil, adapter: (any ATOM.RowAdapter)? = nil) throws -> ATOM.NullableDatabaseValueCursor<Wrapped>
   public static func fetchAll(_ statement: ATOM.SelectStatement, arguments: ATOM.StatementArguments? = nil, adapter: (any ATOM.RowAdapter)? = nil) throws -> [Wrapped?]
 }
-#else
-extension Swift.Optional where Wrapped : ATOM.DatabaseValueConvertible {
-  public static func fetchCursor(_ statement: ATOM.SelectStatement, arguments: ATOM.StatementArguments? = nil, adapter: (any ATOM.RowAdapter)? = nil) throws -> ATOM.NullableDatabaseValueCursor<Wrapped>
-  public static func fetchAll(_ statement: ATOM.SelectStatement, arguments: ATOM.StatementArguments? = nil, adapter: (any ATOM.RowAdapter)? = nil) throws -> [Wrapped?]
-}
-#endif
-#if compiler(>=5.3) && $NoncopyableGenerics
 extension Swift.Optional where Wrapped : ATOM.DatabaseValueConvertible {
   public static func fetchCursor(_ db: ATOM.Database, sql: Swift.String, arguments: ATOM.StatementArguments = StatementArguments(), adapter: (any ATOM.RowAdapter)? = nil) throws -> ATOM.NullableDatabaseValueCursor<Wrapped>
   public static func fetchAll(_ db: ATOM.Database, sql: Swift.String, arguments: ATOM.StatementArguments = StatementArguments(), adapter: (any ATOM.RowAdapter)? = nil) throws -> [Wrapped?]
 }
-#else
-extension Swift.Optional where Wrapped : ATOM.DatabaseValueConvertible {
-  public static func fetchCursor(_ db: ATOM.Database, sql: Swift.String, arguments: ATOM.StatementArguments = StatementArguments(), adapter: (any ATOM.RowAdapter)? = nil) throws -> ATOM.NullableDatabaseValueCursor<Wrapped>
-  public static func fetchAll(_ db: ATOM.Database, sql: Swift.String, arguments: ATOM.StatementArguments = StatementArguments(), adapter: (any ATOM.RowAdapter)? = nil) throws -> [Wrapped?]
-}
-#endif
-#if compiler(>=5.3) && $NoncopyableGenerics
 extension Swift.Optional where Wrapped : ATOM.DatabaseValueConvertible {
   public static func fetchCursor<R>(_ db: ATOM.Database, _ request: R) throws -> ATOM.NullableDatabaseValueCursor<Wrapped> where R : ATOM.FetchRequest
   public static func fetchAll<R>(_ db: ATOM.Database, _ request: R) throws -> [Wrapped?] where R : ATOM.FetchRequest
 }
-#else
-extension Swift.Optional where Wrapped : ATOM.DatabaseValueConvertible {
-  public static func fetchCursor<R>(_ db: ATOM.Database, _ request: R) throws -> ATOM.NullableDatabaseValueCursor<Wrapped> where R : ATOM.FetchRequest
-  public static func fetchAll<R>(_ db: ATOM.Database, _ request: R) throws -> [Wrapped?] where R : ATOM.FetchRequest
-}
-#endif
 extension ATOM.FetchRequest where Self.RowDecoder : ATOM._OptionalProtocol, Self.RowDecoder._Wrapped : ATOM.DatabaseValueConvertible {
   public func fetchCursor(_ db: ATOM.Database) throws -> ATOM.NullableDatabaseValueCursor<Self.RowDecoder._Wrapped>
   public func fetchAll(_ db: ATOM.Database) throws -> [Self.RowDecoder._Wrapped?]
@@ -728,21 +837,26 @@ public protocol AtomGesturesDelegate : AnyObject {
 @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class Atom : ObjectiveC.NSObject {
   weak public static var delegate: (any ATOM.AtomDelegate)?
   weak public static var gestureDelegate: (any ATOM.AtomGesturesDelegate)?
-  public static var refreshRateUpdateCallback: ((Swift.String) -> Swift.Void)?
-  public static var signalRateUpdateCallback: ((Swift.String) -> Swift.Void)?
+  public static var cohortsUpdatedCallback: ((Foundation.Date) -> Swift.Void)?
+  public static var signalsSavedInLocalDatabaseCallback: ((Foundation.Date) -> Swift.Void)?
   @objc public static func start(withApiKey apiKey: Swift.String, isTest: Swift.Bool) throws
   public static func getCurrentNetworkConnection() -> ATOM.ATOMReachability.Connection
+  public static func refreshConsent() throws
   @objc public static func start(withApiKey apiKey: Swift.String, isTest: Swift.Bool, withCallback callback: ((Swift.Bool) -> ())?) throws
   @objc public static func setAtomLoggerLevels(_ logLevels: [Swift.String])
   @objc public static func start(isTest: Swift.Bool) throws
   @objc public static func start(isTest: Swift.Bool, withCallback callback: ((Swift.Bool) -> ())?) throws
   @objc public static func stop(withCallback callback: ((Swift.Bool) -> ())?)
+  @available(*, deprecated, message: "Use cohorts(completion:) instead")
   @objc(getCohorts) public static func cohorts() -> [ATOM.ATOMCohort]
+  @objc(getCohortsWithCompletion:) public static func cohorts(completion: @escaping ([ATOM.ATOMCohort]) -> Swift.Void)
   public static func sendStartupData(completion: @escaping (Swift.Bool) -> Swift.Void)
   public static func updateCalculatedCohorts(onStartup isStartup: Swift.Bool = false, eventWasFired eventFired: Swift.Bool = false)
+  public static func updateCalculatedVectors() throws
   @objc public static func vgParameterBase64String() -> Swift.String?
   @objc(impressionFiredWithAdParameters:) public static func impressionFired(withAdParameters parameters: ATOM.ATOMAdParameters)
   @objc public static func fire(eventWithName name: Swift.String, eventWithValue value: Any? = nil, withDelegate delegate: (any ATOM.ATOMEventMatchDelegate)? = nil)
+  @objc public static func fire(eventWithName name: Swift.String, eventWithValue value: Any? = nil, withDelegate delegate: (any ATOM.ATOMEventMatchDelegate)? = nil, completion: @escaping (Swift.Bool, (any Swift.Error)?) -> Swift.Void)
   @objc deinit
 }
 extension ATOM.Atom {
@@ -754,7 +868,7 @@ extension ATOM.Atom {
 }
 extension ATOM.Atom {
   public static func deleteAllGestures() throws
-  public static func deletePrevious1000GesturesIfNeeded() throws
+  public static func deletePrevious1000GesturesIfNeeded(completion: @escaping ((any Swift.Error)?) -> Swift.Void)
   public static func deleteAllSwipeGestures() throws
   public static func deleteAllPinchGestures() throws
   public static func deleteAllSwipeTicks() throws
@@ -785,8 +899,6 @@ extension ATOM.Atom {
   public static var reachabilityLevel: Swift.String {
     get
   }
-  public static func updateRefreshRateTimestamp(_ timestamp: Swift.String)
-  public static func updateSignalsRefreshRateTimestamp(_ timestamp: Swift.String)
 }
 public struct SQLAssociation {
 }
@@ -839,16 +951,6 @@ public struct AnyDatabaseRegionConvertible : ATOM.DatabaseRegionConvertible {
   public init(_ region: @escaping (ATOM.Database) throws -> ATOM.DatabaseRegion)
   public init(_ region: any ATOM.DatabaseRegionConvertible)
   public func databaseRegion(_ db: ATOM.Database) throws -> ATOM.DatabaseRegion
-}
-@_hasMissingDesignatedInitializers public class ATOMDebugConfiguration {
-  final public let id: Swift.Int
-  final public let threshold: Swift.Int?
-  public var name: Swift.String!
-  final public let description: Swift.String!
-  public var model: Swift.String!
-  public var timezone: Swift.String!
-  public var locale: Swift.String!
-  @objc deinit
 }
 public enum ValueScheduling {
   case mainQueue
@@ -979,39 +1081,18 @@ extension ATOM.FetchRequest where Self.RowDecoder : ATOM.DatabaseValueConvertibl
   public func fetchAll(_ db: ATOM.Database) throws -> [Self.RowDecoder]
   public func fetchOne(_ db: ATOM.Database) throws -> Self.RowDecoder?
 }
-#if compiler(>=5.3) && $NoncopyableGenerics
 extension Swift.Optional where Wrapped : ATOM.DatabaseValueConvertible, Wrapped : ATOM.StatementColumnConvertible {
   public static func fetchCursor(_ statement: ATOM.SelectStatement, arguments: ATOM.StatementArguments? = nil, adapter: (any ATOM.RowAdapter)? = nil) throws -> ATOM.FastNullableDatabaseValueCursor<Wrapped>
   public static func fetchAll(_ statement: ATOM.SelectStatement, arguments: ATOM.StatementArguments? = nil, adapter: (any ATOM.RowAdapter)? = nil) throws -> [Wrapped?]
 }
-#else
-extension Swift.Optional where Wrapped : ATOM.DatabaseValueConvertible, Wrapped : ATOM.StatementColumnConvertible {
-  public static func fetchCursor(_ statement: ATOM.SelectStatement, arguments: ATOM.StatementArguments? = nil, adapter: (any ATOM.RowAdapter)? = nil) throws -> ATOM.FastNullableDatabaseValueCursor<Wrapped>
-  public static func fetchAll(_ statement: ATOM.SelectStatement, arguments: ATOM.StatementArguments? = nil, adapter: (any ATOM.RowAdapter)? = nil) throws -> [Wrapped?]
-}
-#endif
-#if compiler(>=5.3) && $NoncopyableGenerics
 extension Swift.Optional where Wrapped : ATOM.DatabaseValueConvertible, Wrapped : ATOM.StatementColumnConvertible {
   public static func fetchCursor(_ db: ATOM.Database, sql: Swift.String, arguments: ATOM.StatementArguments = StatementArguments(), adapter: (any ATOM.RowAdapter)? = nil) throws -> ATOM.FastNullableDatabaseValueCursor<Wrapped>
   public static func fetchAll(_ db: ATOM.Database, sql: Swift.String, arguments: ATOM.StatementArguments = StatementArguments(), adapter: (any ATOM.RowAdapter)? = nil) throws -> [Wrapped?]
 }
-#else
-extension Swift.Optional where Wrapped : ATOM.DatabaseValueConvertible, Wrapped : ATOM.StatementColumnConvertible {
-  public static func fetchCursor(_ db: ATOM.Database, sql: Swift.String, arguments: ATOM.StatementArguments = StatementArguments(), adapter: (any ATOM.RowAdapter)? = nil) throws -> ATOM.FastNullableDatabaseValueCursor<Wrapped>
-  public static func fetchAll(_ db: ATOM.Database, sql: Swift.String, arguments: ATOM.StatementArguments = StatementArguments(), adapter: (any ATOM.RowAdapter)? = nil) throws -> [Wrapped?]
-}
-#endif
-#if compiler(>=5.3) && $NoncopyableGenerics
 extension Swift.Optional where Wrapped : ATOM.DatabaseValueConvertible, Wrapped : ATOM.StatementColumnConvertible {
   public static func fetchCursor<R>(_ db: ATOM.Database, _ request: R) throws -> ATOM.FastNullableDatabaseValueCursor<Wrapped> where R : ATOM.FetchRequest
   public static func fetchAll<R>(_ db: ATOM.Database, _ request: R) throws -> [Wrapped?] where R : ATOM.FetchRequest
 }
-#else
-extension Swift.Optional where Wrapped : ATOM.DatabaseValueConvertible, Wrapped : ATOM.StatementColumnConvertible {
-  public static func fetchCursor<R>(_ db: ATOM.Database, _ request: R) throws -> ATOM.FastNullableDatabaseValueCursor<Wrapped> where R : ATOM.FetchRequest
-  public static func fetchAll<R>(_ db: ATOM.Database, _ request: R) throws -> [Wrapped?] where R : ATOM.FetchRequest
-}
-#endif
 extension ATOM.FetchRequest where Self.RowDecoder : ATOM._OptionalProtocol, Self.RowDecoder._Wrapped : ATOM.DatabaseValueConvertible, Self.RowDecoder._Wrapped : ATOM.StatementColumnConvertible {
   public func fetchCursor(_ db: ATOM.Database) throws -> ATOM.FastNullableDatabaseValueCursor<Self.RowDecoder._Wrapped>
   public func fetchAll(_ db: ATOM.Database) throws -> [Self.RowDecoder._Wrapped?]
@@ -1197,6 +1278,10 @@ public class ATOMSynchronizedDictionary<Key, Value> where Key : Swift.Hashable {
   public init()
   public func set(value: Value, forKey key: Key)
   public func removeValue(forKey key: Key)
+  public func removeAll()
+  public func setSync(value: Value, forKey key: Key)
+  public func removeValueSync(forKey key: Key) -> Value?
+  public func removeAllSync()
   public func value(forKey key: Key) -> Value?
   public var count: Swift.Int {
     get
@@ -1212,6 +1297,7 @@ public class ATOMSynchronizedDictionary<Key, Value> where Key : Swift.Hashable {
     set
   }
   public func findKey(where predicate: (Key, Value) throws -> Swift.Bool) rethrows -> Key?
+  public func snapshot() -> [Key : Value]
   @objc deinit
 }
 extension ATOM.ATOMSynchronizedDictionary : Swift.Sequence {
@@ -1346,7 +1432,7 @@ extension ATOM.AssociationToMany {
 }
 @_inheritsConvenienceInitializers @objc final public class ATOMEventAPI : ObjectiveC.NSObject {
   weak public static var delegate: (any ATOM.ATOMEventMatchDelegate)?
-  @objc public static func fire(event: ATOM.ATOMEvent, withDelegate delegate: (any ATOM.ATOMEventMatchDelegate)? = nil) throws
+  @objc public static func fire(event: ATOM.ATOMEvent, withDelegate delegate: (any ATOM.ATOMEventMatchDelegate)? = nil, completion: @escaping (Swift.Bool, (any Swift.Error)?) -> Swift.Void)
   @objc override dynamic public init()
   @objc deinit
 }
@@ -1365,18 +1451,6 @@ extension ATOM.DatabaseValueConvertible where Self : Swift.Encodable, Self : Swi
   public var databaseValue: ATOM.DatabaseValue {
     get
   }
-}
-@_hasMissingDesignatedInitializers public class ATOMRefreshData {
-  public static let shared: ATOM.ATOMRefreshData
-  public var refreshRateTimestamp: Swift.String? {
-    get
-  }
-  public var signalsRefreshRateTimestamp: Swift.String? {
-    get
-  }
-  public func updateRefreshRateTimestamp(_ timestamp: Swift.String)
-  public func updateSignalsRefreshRateTimestamp(_ timestamp: Swift.String)
-  @objc deinit
 }
 public struct ATOMTouchConfiguration {
   public var color: UIKit.UIColor?
@@ -1765,7 +1839,7 @@ extension ATOM.AtomGestures {
 }
 extension ATOM.AtomGestures {
   public static func deleteAllGestures() throws
-  public static func deletePrevious1000Gestures() throws
+  public static func deletePrevious1000Gestures(completion: @escaping ((any Swift.Error)?) -> Swift.Void)
   public static func deleteAllSwipeGestures() throws
   public static func deleteAllPinchGestures() throws
   public static func deleteAllSwipeTicks() throws
@@ -1790,10 +1864,16 @@ extension ATOM.ATOMCohort {
   }
 }
 @objc final public class ATOMFlush : ObjectiveC.NSObject, Swift.Codable {
+  final public var name: Swift.String {
+    get
+  }
   final public var query: Swift.String {
     get
   }
-  final public var repetitionIntervalInSeconds: Swift.Int {
+  final public var initialCleanupInSeconds: Swift.Int {
+    get
+  }
+  final public var cyclicCleanupInSeconds: Swift.Int {
     get
   }
   @objc deinit
@@ -1902,6 +1982,22 @@ public protocol DatabaseAggregate {
   init()
   mutating func step(_ dbValues: [ATOM.DatabaseValue]) throws
   func finalize() throws -> (any ATOM.DatabaseValueConvertible)?
+}
+@_hasMissingDesignatedInitializers public class ATOMRefreshData {
+  public static let shared: ATOM.ATOMRefreshData
+  public var cohortsUpdatedAt: Swift.String {
+    get
+    set
+  }
+  public var signalsSavedInLocalDatabaseAt: Swift.String {
+    get
+    set
+  }
+  public var initialSignalsSavedInLocalDatabaseAt: Swift.String {
+    get
+    set
+  }
+  @objc deinit
 }
 extension Foundation.Data : ATOM.DatabaseValueConvertible, ATOM.StatementColumnConvertible {
   @inlinable public init(sqliteStatement: ATOM.SQLiteStatement, index: Swift.Int32) {
@@ -3235,21 +3331,12 @@ extension ATOM.DatabaseValueConvertible {
   @available(*, unavailable, renamed: "fetchOne(_:sql:arguments:adapter:)")
   public static func fetchOne(_ db: ATOM.Database, _ sql: Swift.String, arguments: ATOM.StatementArguments? = nil, adapter: (any ATOM.RowAdapter)? = nil) throws -> Self?
 }
-#if compiler(>=5.3) && $NoncopyableGenerics
 extension Swift.Optional where Wrapped : ATOM.DatabaseValueConvertible {
   @available(*, unavailable, renamed: "fetchCursor(_:sql:arguments:adapter:)")
   public static func fetchCursor(_ db: ATOM.Database, _ sql: Swift.String, arguments: ATOM.StatementArguments? = nil, adapter: (any ATOM.RowAdapter)? = nil) throws -> ATOM.NullableDatabaseValueCursor<Wrapped>
   @available(*, unavailable, renamed: "fetchAll(_:sql:arguments:adapter:)")
   public static func fetchAll(_ db: ATOM.Database, _ sql: Swift.String, arguments: ATOM.StatementArguments? = nil, adapter: (any ATOM.RowAdapter)? = nil) throws -> [Wrapped?]
 }
-#else
-extension Swift.Optional where Wrapped : ATOM.DatabaseValueConvertible {
-  @available(*, unavailable, renamed: "fetchCursor(_:sql:arguments:adapter:)")
-  public static func fetchCursor(_ db: ATOM.Database, _ sql: Swift.String, arguments: ATOM.StatementArguments? = nil, adapter: (any ATOM.RowAdapter)? = nil) throws -> ATOM.NullableDatabaseValueCursor<Wrapped>
-  @available(*, unavailable, renamed: "fetchAll(_:sql:arguments:adapter:)")
-  public static func fetchAll(_ db: ATOM.Database, _ sql: Swift.String, arguments: ATOM.StatementArguments? = nil, adapter: (any ATOM.RowAdapter)? = nil) throws -> [Wrapped?]
-}
-#endif
 extension ATOM.Row {
   @available(*, unavailable, renamed: "fetchCursor(_:sql:arguments:adapter:)")
   public static func fetchCursor(_ db: ATOM.Database, _ sql: Swift.String, arguments: ATOM.StatementArguments? = nil, adapter: (any ATOM.RowAdapter)? = nil) throws -> ATOM.RowCursor
@@ -3262,17 +3349,10 @@ extension ATOM.DatabaseValueConvertible where Self : ATOM.StatementColumnConvert
   @available(*, unavailable, renamed: "fetchCursor(_:sql:arguments:adapter:)")
   public static func fetchCursor(_ db: ATOM.Database, _ sql: Swift.String, arguments: ATOM.StatementArguments? = nil, adapter: (any ATOM.RowAdapter)? = nil) throws -> ATOM.FastDatabaseValueCursor<Self>
 }
-#if compiler(>=5.3) && $NoncopyableGenerics
 extension Swift.Optional where Wrapped : ATOM.DatabaseValueConvertible, Wrapped : ATOM.StatementColumnConvertible {
   @available(*, unavailable, renamed: "fetchCursor(_:sql:arguments:adapter:)")
   public static func fetchCursor(_ db: ATOM.Database, _ sql: Swift.String, arguments: ATOM.StatementArguments? = nil, adapter: (any ATOM.RowAdapter)? = nil) throws -> ATOM.FastNullableDatabaseValueCursor<Wrapped>
 }
-#else
-extension Swift.Optional where Wrapped : ATOM.DatabaseValueConvertible, Wrapped : ATOM.StatementColumnConvertible {
-  @available(*, unavailable, renamed: "fetchCursor(_:sql:arguments:adapter:)")
-  public static func fetchCursor(_ db: ATOM.Database, _ sql: Swift.String, arguments: ATOM.StatementArguments? = nil, adapter: (any ATOM.RowAdapter)? = nil) throws -> ATOM.FastNullableDatabaseValueCursor<Wrapped>
-}
-#endif
 extension ATOM.FetchableRecord {
   @available(*, unavailable, renamed: "fetchCursor(_:sql:arguments:adapter:)")
   public static func fetchCursor(_ db: ATOM.Database, _ sql: Swift.String, arguments: ATOM.StatementArguments? = nil, adapter: (any ATOM.RowAdapter)? = nil) throws -> ATOM.RecordCursor<Self>
@@ -3467,6 +3547,11 @@ public class ATOMZip {
   public class func isValidFileExtension(_ fileExtension: Swift.String) -> Swift.Bool
   @objc deinit
 }
+extension Foundation.Date {
+  public var reportableString: Swift.String {
+    get
+  }
+}
 @_hasMissingDesignatedInitializers public class ATOMSynchronizedArray<T> {
   public func append(newElement: T)
   public func appendIfNotExists(_ newElement: T) where T : Swift.Equatable
@@ -3482,6 +3567,9 @@ public class ATOMZip {
   }
   public func safeElement(at index: Swift.Int) -> T?
   public func firstIndex(of element: T) -> Swift.Int? where T : Swift.Equatable
+  public func takeSnapshotAndRemoveAll() -> [T]
+  public func updateElement(where predicate: @escaping (T) -> Swift.Bool, update: @escaping (inout T) -> Swift.Void)
+  public func makeSnapshot() -> [T]
   @objc deinit
 }
 extension ATOM.ATOMSynchronizedArray : Swift.Sequence {
@@ -3831,15 +3919,9 @@ extension Swift.String {
 public protocol _OptionalProtocol {
   associatedtype _Wrapped
 }
-#if compiler(>=5.3) && $NoncopyableGenerics
 extension Swift.Optional : ATOM._OptionalProtocol {
   public typealias _Wrapped = Wrapped
 }
-#else
-extension Swift.Optional : ATOM._OptionalProtocol {
-  public typealias _Wrapped = Wrapped
-}
-#endif
 @inlinable internal func GRDBPrecondition(_ condition: @autoclosure () -> Swift.Bool, _ message: @autoclosure () -> Swift.String = "", file: Swift.StaticString = #file, line: Swift.UInt = #line) {
      
      
@@ -4397,6 +4479,8 @@ extension ATOM.Database.TransactionCompletion : Swift.Hashable {}
 extension ATOM.Database.TransactionKind : Swift.Equatable {}
 extension ATOM.Database.TransactionKind : Swift.Hashable {}
 extension ATOM.Database.TransactionKind : Swift.RawRepresentable {}
+extension ATOM.ATOMConsentError : Swift.Equatable {}
+extension ATOM.ATOMConsentError : Swift.Hashable {}
 extension ATOM.DatabaseUUIDEncodingStrategy : Swift.Equatable {}
 extension ATOM.DatabaseUUIDEncodingStrategy : Swift.Hashable {}
 extension ATOM.ATOMGesturesList : Swift.Equatable {}

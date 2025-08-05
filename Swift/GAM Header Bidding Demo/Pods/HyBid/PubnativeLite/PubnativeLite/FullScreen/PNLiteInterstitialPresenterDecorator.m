@@ -1,23 +1,7 @@
+// 
+// HyBid SDK License
 //
-//  Copyright © 2018 PubNative. All rights reserved.
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
+// https://github.com/pubnative/pubnative-hybid-ios-sdk/blob/main/LICENSE
 //
 
 #import "PNLiteInterstitialPresenterDecorator.h"
@@ -120,9 +104,13 @@
 }
 
 - (void)interstitialPresenterDidShow:(HyBidInterstitialPresenter *)interstitialPresenter {
-    if (self.interstitialPresenterDelegate && [self.interstitialPresenterDelegate respondsToSelector:@selector(interstitialPresenterDidShow:)] && !self.adTracker.impressionTracked) {
-        [self.adTracker trackImpressionWithAdFormat:HyBidReportingAdFormat.FULLSCREEN];
-        [self.interstitialPresenterDelegate interstitialPresenterDidShow:interstitialPresenter];
+    if (self.interstitialPresenterDelegate && [self.interstitialPresenterDelegate respondsToSelector:@selector(interstitialPresenterDidShow:)]) {
+        
+        if (!self.adTracker.impressionTracked) {
+            [self.adTracker trackImpressionWithAdFormat:HyBidReportingAdFormat.FULLSCREEN];
+            [self.interstitialPresenterDelegate interstitialPresenterDidShow:interstitialPresenter];
+        }
+        
         [self.skoverlay addObservers];
         [self.skoverlay presentWithAd:interstitialPresenter.ad];
         [self.customCTA presentCustomCTAWithDelay];
@@ -207,17 +195,8 @@
     }
 }
 
-- (void)interstitialPresenterDidAppear:(HyBidInterstitialPresenter *)interstitialPresenter {
-    [self.skoverlay presentWithAd:interstitialPresenter.ad];
-}
-
-- (void)interstitialPresenterDidDisappear:(HyBidInterstitialPresenter *)interstitialPresenter {
-    [self.skoverlay dismissEntirely:NO withAd:interstitialPresenter.ad causedByAutoCloseTimerCompletion:NO];
-}
-
-- (void)interstitialPresenterPresentsSKOverlay:(HyBidInterstitialPresenter *)interstitialPresenter {
-    [self.skoverlay presentWithAd:interstitialPresenter.ad];
-}
+- (void)interstitialPresenterDidAppear:(HyBidInterstitialPresenter *)interstitialPresenter {}
+- (void)interstitialPresenterDidDisappear:(HyBidInterstitialPresenter *)interstitialPresenter {}
 
 - (void)interstitialPresenterDismissesSKOverlay:(HyBidInterstitialPresenter *)interstitialPresenter {
     [self.skoverlay dismissEntirely:YES withAd:interstitialPresenter.ad causedByAutoCloseTimerCompletion:NO];
@@ -244,6 +223,27 @@
 
 - (void)interstitialPresenterDidClickCustomCTAOnEndCard:(BOOL)onEndCard {
     [self.adTracker trackCustomCTAClickWithAdFormat:HyBidReportingAdFormat.FULLSCREEN onEndCard:onEndCard];
+}
+
+- (void)interstitialPresenterDidReplay:(HyBidInterstitialPresenter *)interstitialPresenter
+                        viewController:(UIViewController *)viewController {
+    [self interstitialPresenterDismissesSKOverlay:interstitialPresenter];
+    
+    if (self.interstitialPresenter.ad.skoverlayEnabled && [self.interstitialPresenter.ad.skoverlayEnabled boolValue]) {
+        self.skoverlay = [[HyBidSKOverlay alloc] initWithAd:interstitialPresenter.ad
+                                                 isRewarded:NO
+                                                   delegate:interstitialPresenter.skoverlayDelegate];
+    }
+    
+    if ([HyBidCustomCTAView isCustomCTAValidWithAd: interstitialPresenter.ad]) {
+        self.customCTA = [[HyBidCustomCTAView alloc] initWithAd:interstitialPresenter.ad
+                                                 viewController:viewController
+                                                       delegate:interstitialPresenter.customCTADelegate
+                                                       adFormat:HyBidReportingAdFormat.FULLSCREEN];
+    }
+    
+    [self interstitialPresenterDidShow:interstitialPresenter];
+    [self.adTracker trackReplayClickWithAdFormat:HyBidReportingAdFormat.FULLSCREEN];
 }
 
 - (void)impressionDetectedWithView:(UIView *)view {}
