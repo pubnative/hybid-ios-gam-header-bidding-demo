@@ -1,33 +1,33 @@
 PODS:
-  - ATOM-Standalone (3.7.0)
-  - Google-Mobile-Ads-SDK (12.8.0):
+  - ATOM-Standalone (3.8.0)
+  - Google-Mobile-Ads-SDK (12.12.0):
     - GoogleUserMessagingPlatform (>= 1.1)
-  - GoogleMobileAds-HyBid-Adapters (3.6.1.0):
+  - GoogleMobileAds-HyBid-Adapters (3.7.0.0):
     - Google-Mobile-Ads-SDK (~> 12.0)
-    - HyBid (= 3.6.1)
+    - HyBid (= 3.7.0)
   - GoogleUserMessagingPlatform (3.0.0)
-  - HyBid (3.6.1):
-    - HyBid/ATOM (= 3.6.1)
-    - HyBid/Banner (= 3.6.1)
-    - HyBid/Core (= 3.6.1)
-    - HyBid/FullScreen (= 3.6.1)
-    - HyBid/Native (= 3.6.1)
-    - HyBid/RewardedVideo (= 3.6.1)
-  - HyBid/ATOM (3.6.1):
+  - HyBid (3.7.0):
+    - HyBid/ATOM (= 3.7.0)
+    - HyBid/Banner (= 3.7.0)
+    - HyBid/Core (= 3.7.0)
+    - HyBid/FullScreen (= 3.7.0)
+    - HyBid/Native (= 3.7.0)
+    - HyBid/RewardedVideo (= 3.7.0)
+  - HyBid/ATOM (3.7.0):
     - ATOM-Standalone
     - HyBid/Core
-  - HyBid/Banner (3.6.1):
+  - HyBid/Banner (3.7.0):
     - HyBid/Core
-  - HyBid/Core (3.6.1)
-  - HyBid/FullScreen (3.6.1):
+  - HyBid/Core (3.7.0)
+  - HyBid/FullScreen (3.7.0):
     - HyBid/Core
-  - HyBid/Native (3.6.1):
+  - HyBid/Native (3.7.0):
     - HyBid/Core
-  - HyBid/RewardedVideo (3.6.1):
+  - HyBid/RewardedVideo (3.7.0):
     - HyBid/Core
 
 DEPENDENCIES:
-  - GoogleMobileAds-HyBid-Adapters (= 3.6.1.0)
+  - GoogleMobileAds-HyBid-Adapters (= 3.7.0.0)
 
 SPEC REPOS:
   trunk:
@@ -38,12 +38,12 @@ SPEC REPOS:
     - HyBid
 
 SPEC CHECKSUMS:
-  ATOM-Standalone: 28d598876cd7ab619f2cf0b910d4f4fd7e8c8f74
-  Google-Mobile-Ads-SDK: ece122bc89b38cab319543bc464a9ceabfe1d307
-  GoogleMobileAds-HyBid-Adapters: 685d946e378b4af86d5b6c14c1482635c5f9572a
+  ATOM-Standalone: ad17f0d0e60b22f67ed99e5a336425d68d324f3e
+  Google-Mobile-Ads-SDK: 4dde70a8c18d96b14f9548759b8cec6ecb0bc3e6
+  GoogleMobileAds-HyBid-Adapters: 86b0f9a614cbffb3cfc4d5fe8af55fc3c769aa46
   GoogleUserMessagingPlatform: f8d0cdad3ca835406755d0a69aa634f00e76d576
-  HyBid: f6ed92d6af10dcbc23f8a43a42fdf88a45ecdec7
+  HyBid: 84608b62cdebde3dcab171948959fa617957063b
 
-PODFILE CHECKSUM: 57e79360f22b259aace380b3631a5ad71055ba65
+PODFILE CHECKSUM: 930bf6f31d16bcd1f2a7cac82b356e183bfc4dac
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.16.0

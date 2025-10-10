@@ -414,7 +414,7 @@ SWIFT_CLASS("_TtC4ATOM4Atom")
 /// Returns an array which contains current cohort identifiers or an empty array, if valid cohorts do not exist. The returned data must not be cached by the host application.
 + (void)getCohortsWithCompletion:(void (^ _Nonnull)(NSArray<ATOMCohort *> * _Nonnull))completion;
 + (NSString * _Nullable)vgParameterBase64String SWIFT_WARN_UNUSED_RESULT;
-+ (void)impressionFiredWithAdParameters:(ATOMAdParameters * _Nonnull)parameters;
++ (void)impressionFiredWithAdParameters:(ATOMAdParameters * _Nonnull)parameters SWIFT_DEPRECATED_MSG("This method has been deprecated and no longer performs any operations");
 /// The method is used to fire an event by publishers.
 /// <code>value</code> can be <em>Any</em> value from the list of supporting types  and it is optional
 /// Supporting types are:
