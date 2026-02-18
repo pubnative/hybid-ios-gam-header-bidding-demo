@@ -1,6 +1,0 @@
-framework module GoogleMobileAds_HyBid_Adapters {
-  umbrella header "GoogleMobileAds-HyBid-Adapters-umbrella.h"
-
-  export *
-  module * { export * }
-}

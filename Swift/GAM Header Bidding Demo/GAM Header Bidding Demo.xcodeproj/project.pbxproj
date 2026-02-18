@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		342726B42F46063B0097D892 /* GoogleMobileAdsHyBidAdapters in Frameworks */ = {isa = PBXBuildFile; productRef = 342726B32F46063B0097D892 /* GoogleMobileAdsHyBidAdapters */; };
 		5AFED867266AA03A005C2585 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFED866266AA03A005C2585 /* AppDelegate.swift */; };
 		5AFED869266AA03A005C2585 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFED868266AA03A005C2585 /* SceneDelegate.swift */; };
 		5AFED86E266AA03A005C2585 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5AFED86C266AA03A005C2585 /* Main.storyboard */; };
@@ -16,12 +17,10 @@
 		5AFED87D266AAEF2005C2585 /* MRect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFED87C266AAEF2005C2585 /* MRect.swift */; };
 		5AFED87F266AAF07005C2585 /* Interstitial.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFED87E266AAF07005C2585 /* Interstitial.swift */; };
 		5AFED882266ABDE1005C2585 /* GAMHeaderBidding.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5AFED881266ABDE1005C2585 /* GAMHeaderBidding.storyboard */; };
-		FFFEB1076A9123EC6E62FDDD /* Pods_GAM_Header_Bidding_Demo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4675955F5236AE4EED458425 /* Pods_GAM_Header_Bidding_Demo.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		4675955F5236AE4EED458425 /* Pods_GAM_Header_Bidding_Demo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GAM_Header_Bidding_Demo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		5AFED863266AA03A005C2585 /* GAM Header Bidding Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "GAM Header Bidding Demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5AFED863266AA03A005C2585 /* GAM Header Bidding Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "GAM Header Bidding Demo.app"; path = "/Users/ayselabdullayeva/Documents/hybid-ios-gam-header-bidding-demo/Swift/GAM Header Bidding Demo/build/Debug-iphoneos/GAM Header Bidding Demo.app"; sourceTree = "<absolute>"; };
 		5AFED866266AA03A005C2585 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5AFED868266AA03A005C2585 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		5AFED86D266AA03A005C2585 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -32,8 +31,6 @@
 		5AFED87C266AAEF2005C2585 /* MRect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRect.swift; sourceTree = "<group>"; };
 		5AFED87E266AAF07005C2585 /* Interstitial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Interstitial.swift; sourceTree = "<group>"; };
 		5AFED881266ABDE1005C2585 /* GAMHeaderBidding.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = GAMHeaderBidding.storyboard; sourceTree = "<group>"; };
-		712C2FC2655583BD1128DFA2 /* Pods-GAM Header Bidding Demo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GAM Header Bidding Demo.release.xcconfig"; path = "Target Support Files/Pods-GAM Header Bidding Demo/Pods-GAM Header Bidding Demo.release.xcconfig"; sourceTree = "<group>"; };
-		8ABEA3CDD00D46E181FBE836 /* Pods-GAM Header Bidding Demo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GAM Header Bidding Demo.debug.xcconfig"; path = "Target Support Files/Pods-GAM Header Bidding Demo/Pods-GAM Header Bidding Demo.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,7 +38,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FFFEB1076A9123EC6E62FDDD /* Pods_GAM_Header_Bidding_Demo.framework in Frameworks */,
+				342726B42F46063B0097D892 /* GoogleMobileAdsHyBidAdapters in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -52,18 +49,7 @@
 			isa = PBXGroup;
 			children = (
 				5AFED865266AA03A005C2585 /* GAM Header Bidding Demo */,
-				5AFED864266AA03A005C2585 /* Products */,
-				812BA129E96D5B6BA113A5A2 /* Pods */,
-				903DA9AC89290D3B98D903C6 /* Frameworks */,
 			);
-			sourceTree = "<group>";
-		};
-		5AFED864266AA03A005C2585 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				5AFED863266AA03A005C2585 /* GAM Header Bidding Demo.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		5AFED865266AA03A005C2585 /* GAM Header Bidding Demo */ = {
@@ -99,23 +85,6 @@
 			path = Storyboards;
 			sourceTree = "<group>";
 		};
-		812BA129E96D5B6BA113A5A2 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				8ABEA3CDD00D46E181FBE836 /* Pods-GAM Header Bidding Demo.debug.xcconfig */,
-				712C2FC2655583BD1128DFA2 /* Pods-GAM Header Bidding Demo.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		903DA9AC89290D3B98D903C6 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				4675955F5236AE4EED458425 /* Pods_GAM_Header_Bidding_Demo.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -123,12 +92,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5AFED877266AA03E005C2585 /* Build configuration list for PBXNativeTarget "GAM Header Bidding Demo" */;
 			buildPhases = (
-				91E2E909E7D312E7E969370F /* [CP] Check Pods Manifest.lock */,
 				5AFED85F266AA03A005C2585 /* Sources */,
 				5AFED860266AA03A005C2585 /* Frameworks */,
 				5AFED861266AA03A005C2585 /* Resources */,
-				8A023630102348CA253C3353 /* [CP] Embed Pods Frameworks */,
-				8D1790449B6CDB6750A8BF17 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -162,7 +128,10 @@
 				Base,
 			);
 			mainGroup = 5AFED85A266AA03A005C2585;
-			productRefGroup = 5AFED864266AA03A005C2585 /* Products */;
+			packageReferences = (
+				342726B22F46063B0097D892 /* XCRemoteSwiftPackageReference "googleMobileAds-hybid-adapters-ios" */,
+			);
+			productRefGroup = 5AFED85A266AA03A005C2585;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -184,65 +153,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		8A023630102348CA253C3353 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-GAM Header Bidding Demo/Pods-GAM Header Bidding Demo-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-GAM Header Bidding Demo/Pods-GAM Header Bidding Demo-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-GAM Header Bidding Demo/Pods-GAM Header Bidding Demo-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		8D1790449B6CDB6750A8BF17 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-GAM Header Bidding Demo/Pods-GAM Header Bidding Demo-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-GAM Header Bidding Demo/Pods-GAM Header Bidding Demo-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-GAM Header Bidding Demo/Pods-GAM Header Bidding Demo-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		91E2E909E7D312E7E969370F /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-GAM Header Bidding Demo-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		5AFED85F266AA03A005C2585 /* Sources */ = {
@@ -397,7 +307,6 @@
 		};
 		5AFED878266AA03E005C2585 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8ABEA3CDD00D46E181FBE836 /* Pods-GAM Header Bidding Demo.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -417,7 +326,6 @@
 		};
 		5AFED879266AA03E005C2585 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 712C2FC2655583BD1128DFA2 /* Pods-GAM Header Bidding Demo.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -457,6 +365,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		342726B22F46063B0097D892 /* XCRemoteSwiftPackageReference "googleMobileAds-hybid-adapters-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pubnative/googleMobileAds-hybid-adapters-ios";
+			requirement = {
+				branch = "VMI-1493-add-spm-support";
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		342726B32F46063B0097D892 /* GoogleMobileAdsHyBidAdapters */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 342726B22F46063B0097D892 /* XCRemoteSwiftPackageReference "googleMobileAds-hybid-adapters-ios" */;
+			productName = GoogleMobileAdsHyBidAdapters;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 5AFED85B266AA03A005C2585 /* Project object */;
 }

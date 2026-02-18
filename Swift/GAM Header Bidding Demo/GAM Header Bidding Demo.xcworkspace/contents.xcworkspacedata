@@ -4,7 +4,4 @@
    <FileRef
       location = "group:GAM Header Bidding Demo.xcodeproj">
    </FileRef>
-   <FileRef
-      location = "group:Pods/Pods.xcodeproj">
-   </FileRef>
 </Workspace>
