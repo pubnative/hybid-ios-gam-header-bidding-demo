@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pubnative/googleMobileAds-hybid-adapters-ios",
       "state" : {
-        "branch" : "VMI-1493-add-spm-support",
-        "revision" : "0ac3869e864cee90b2ab6fdee98edb81dca480d5"
+        "branch" : "master",
+        "revision" : "594ae56b89908e98340814e0fb23be5d9203b0bc"
       }
     },
     {

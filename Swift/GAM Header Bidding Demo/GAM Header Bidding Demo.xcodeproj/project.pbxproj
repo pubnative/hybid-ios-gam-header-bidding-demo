@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		342726B42F46063B0097D892 /* GoogleMobileAdsHyBidAdapters in Frameworks */ = {isa = PBXBuildFile; productRef = 342726B32F46063B0097D892 /* GoogleMobileAdsHyBidAdapters */; };
+		340A95892F5B1F30001C311F /* GoogleMobileAdsHyBidAdapters in Frameworks */ = {isa = PBXBuildFile; productRef = 340A95882F5B1F30001C311F /* GoogleMobileAdsHyBidAdapters */; };
 		5AFED867266AA03A005C2585 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFED866266AA03A005C2585 /* AppDelegate.swift */; };
 		5AFED869266AA03A005C2585 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFED868266AA03A005C2585 /* SceneDelegate.swift */; };
 		5AFED86E266AA03A005C2585 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5AFED86C266AA03A005C2585 /* Main.storyboard */; };
@@ -20,7 +20,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		5AFED863266AA03A005C2585 /* GAM Header Bidding Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "GAM Header Bidding Demo.app"; path = "/Users/ayselabdullayeva/Documents/hybid-ios-gam-header-bidding-demo/Swift/GAM Header Bidding Demo/build/Debug-iphoneos/GAM Header Bidding Demo.app"; sourceTree = "<absolute>"; };
+		340A95862F5B1F11001C311F /* GAM Header Bidding Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "GAM Header Bidding Demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5AFED866266AA03A005C2585 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5AFED868266AA03A005C2585 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		5AFED86D266AA03A005C2585 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -38,7 +38,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				342726B42F46063B0097D892 /* GoogleMobileAdsHyBidAdapters in Frameworks */,
+				340A95892F5B1F30001C311F /* GoogleMobileAdsHyBidAdapters in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -49,6 +49,7 @@
 			isa = PBXGroup;
 			children = (
 				5AFED865266AA03A005C2585 /* GAM Header Bidding Demo */,
+				340A95862F5B1F11001C311F /* GAM Header Bidding Demo.app */,
 			);
 			sourceTree = "<group>";
 		};
@@ -102,7 +103,7 @@
 			);
 			name = "GAM Header Bidding Demo";
 			productName = "GAM Header Bidding Demo";
-			productReference = 5AFED863266AA03A005C2585 /* GAM Header Bidding Demo.app */;
+			productReference = 340A95862F5B1F11001C311F /* GAM Header Bidding Demo.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -129,7 +130,7 @@
 			);
 			mainGroup = 5AFED85A266AA03A005C2585;
 			packageReferences = (
-				342726B22F46063B0097D892 /* XCRemoteSwiftPackageReference "googleMobileAds-hybid-adapters-ios" */,
+				340A95872F5B1F30001C311F /* XCRemoteSwiftPackageReference "googleMobileAds-hybid-adapters-ios" */,
 			);
 			productRefGroup = 5AFED85A266AA03A005C2585;
 			projectDirPath = "";
@@ -367,20 +368,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		342726B22F46063B0097D892 /* XCRemoteSwiftPackageReference "googleMobileAds-hybid-adapters-ios" */ = {
+		340A95872F5B1F30001C311F /* XCRemoteSwiftPackageReference "googleMobileAds-hybid-adapters-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pubnative/googleMobileAds-hybid-adapters-ios";
 			requirement = {
-				branch = "VMI-1493-add-spm-support";
+				branch = master;
 				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		342726B32F46063B0097D892 /* GoogleMobileAdsHyBidAdapters */ = {
+		340A95882F5B1F30001C311F /* GoogleMobileAdsHyBidAdapters */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 342726B22F46063B0097D892 /* XCRemoteSwiftPackageReference "googleMobileAds-hybid-adapters-ios" */;
+			package = 340A95872F5B1F30001C311F /* XCRemoteSwiftPackageReference "googleMobileAds-hybid-adapters-ios" */;
 			productName = GoogleMobileAdsHyBidAdapters;
 		};
 /* End XCSwiftPackageProductDependency section */
