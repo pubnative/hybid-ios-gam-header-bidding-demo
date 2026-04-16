@@ -1,0 +1,63 @@
+name: Update Google Adapter (SPM)
+
+# Triggered by the "Release Google Adapter" workflow in pubnative-hybid-ios-sdk-private
+# via repository_dispatch. Updates Package.resolved with the new hybid-ios-spm-sdk tag
+# SHA and the latest googlemobileads-hybid-adapters-ios master HEAD, then opens a PR.
+
+on:
+  repository_dispatch:
+    types: [google-adapter-release]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+defaults:
+  run:
+    shell: bash -o pipefail {0}
+
+jobs:
+  update:
+    name: "Update Package.resolved and open PR"
+    runs-on: ubuntu-latest
+    env:
+      HYBID_VERSION:   ${{ github.event.client_payload.hybid_version }}
+      ADAPTER_VERSION: ${{ github.event.client_payload.adapter_version }}
+      SPM_COMMIT_SHA:  ${{ github.event.client_payload.spm_commit_sha }}
+      GOOGLE_SHA:      ${{ github.event.client_payload.google_sha }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure git
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Update Package.resolved files
+        run: |
+          echo "Updating Package.resolved files:"
+          echo "  hybid-ios-spm-sdk → $HYBID_VERSION @ $SPM_COMMIT_SHA"
+          echo "  googlemobileads-hybid-adapters-ios → master @ $GOOGLE_SHA"
+          find . -name Package.resolved | sort | while read pkg; do
+            echo "  → $pkg"
+            python3 -c "import json,os; d=json.load(open('$pkg')); [p.update({'state':{'revision':os.environ['SPM_COMMIT_SHA'],'version':os.environ['HYBID_VERSION']}}) for p in d['pins'] if p['identity']=='hybid-ios-spm-sdk']; [p.update({'state':{'branch':'master','revision':os.environ['GOOGLE_SHA']}}) for p in d['pins'] if p['identity']=='googlemobileads-hybid-adapters-ios']; open('$pkg','w').write(json.dumps(d,indent=2))"
+          done
+          echo "─── Diff preview ────────────────────────────────────────────"
+          git diff
+          echo "─────────────────────────────────────────────────────────────"
+
+      - name: Commit, push branch and open PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="update-google-adapter-${ADAPTER_VERSION}"
+          git checkout -b "$BRANCH"
+          git add -A
+          git commit -m "Pod GoogleMobileAds-HyBid-Adapters v: $ADAPTER_VERSION is added"
+          git push origin "$BRANCH"
+          gh pr create \
+            --title "Pod GoogleMobileAds-HyBid-Adapters v: $ADAPTER_VERSION is added" \
+            --body  "Automated update: bumps GoogleMobileAds-HyBid-Adapters to v$ADAPTER_VERSION (SPM)." \
+            --base  master \
+            --head  "$BRANCH"
