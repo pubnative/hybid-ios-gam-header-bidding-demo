@@ -1,51 +1,51 @@
 {
-  "originHash" : "050f00da63df2dc025f61b0037f01cf0877ffdb2e3f2d33c087ff01f2c6b3c15",
-  "pins" : [
+  "originHash": "050f00da63df2dc025f61b0037f01cf0877ffdb2e3f2d33c087ff01f2c6b3c15",
+  "pins": [
     {
-      "identity" : "atom",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pubnative/ATOM.git",
-      "state" : {
-        "revision" : "cd095527246c063c7ffdebe627fb0d3fe31932da",
-        "version" : "3.8.0-spm.2"
+      "identity": "atom",
+      "kind": "remoteSourceControl",
+      "location": "https://github.com/pubnative/ATOM.git",
+      "state": {
+        "revision": "cd095527246c063c7ffdebe627fb0d3fe31932da",
+        "version": "3.8.0-spm.2"
       }
     },
     {
-      "identity" : "googlemobileads-hybid-adapters-ios",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pubnative/googleMobileAds-hybid-adapters-ios",
-      "state" : {
-        "branch" : "master",
-        "revision" : "594ae56b89908e98340814e0fb23be5d9203b0bc"
+      "identity": "googlemobileads-hybid-adapters-ios",
+      "kind": "remoteSourceControl",
+      "location": "https://github.com/pubnative/googleMobileAds-hybid-adapters-ios",
+      "state": {
+        "branch": "master",
+        "revision": "12eb08d9f67634ad9225141da624e1a1863ee176"
       }
     },
     {
-      "identity" : "hybid-ios-spm-sdk",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/vervegroup/hybid-ios-spm-sdk.git",
-      "state" : {
-        "revision" : "40020b2288195920b050108f805b3fdba1699d42",
-        "version" : "3.7.1"
+      "identity": "hybid-ios-spm-sdk",
+      "kind": "remoteSourceControl",
+      "location": "https://github.com/vervegroup/hybid-ios-spm-sdk.git",
+      "state": {
+        "revision": "40020b2288195920b050108f805b3fdba1699d42",
+        "version": "3.7.1"
       }
     },
     {
-      "identity" : "swift-package-manager-google-mobile-ads",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
-      "state" : {
-        "revision" : "7778cc1ab037c10dbbe026959e51e616bd961be9",
-        "version" : "11.13.0"
+      "identity": "swift-package-manager-google-mobile-ads",
+      "kind": "remoteSourceControl",
+      "location": "https://github.com/googleads/swift-package-manager-google-mobile-ads.git",
+      "state": {
+        "revision": "7778cc1ab037c10dbbe026959e51e616bd961be9",
+        "version": "11.13.0"
       }
     },
     {
-      "identity" : "swift-package-manager-google-user-messaging-platform",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git",
-      "state" : {
-        "revision" : "708a282840c2171ee63bd93b87afa49fe507d70e",
-        "version" : "2.7.0"
+      "identity": "swift-package-manager-google-user-messaging-platform",
+      "kind": "remoteSourceControl",
+      "location": "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git",
+      "state": {
+        "revision": "708a282840c2171ee63bd93b87afa49fe507d70e",
+        "version": "2.7.0"
       }
     }
   ],
-  "version" : 3
+  "version": 3
 }
