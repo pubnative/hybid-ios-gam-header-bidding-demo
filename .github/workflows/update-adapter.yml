@@ -28,6 +28,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configure git
         run: |
@@ -43,21 +45,37 @@ jobs:
             echo "  → $pkg"
             python3 -c "import json,os; d=json.load(open('$pkg')); [p.update({'state':{'revision':os.environ['SPM_COMMIT_SHA'],'version':os.environ['HYBID_VERSION']}}) for p in d['pins'] if p['identity']=='hybid-ios-spm-sdk']; [p.update({'state':{'branch':'master','revision':os.environ['GOOGLE_SHA']}}) for p in d['pins'] if p['identity']=='googlemobileads-hybid-adapters-ios']; open('$pkg','w').write(json.dumps(d,indent=2))"
           done
-          echo "─── Diff preview ────────────────────────────────────────────"
-          git diff
-          echo "─────────────────────────────────────────────────────────────"
 
       - name: Commit, push branch and open PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BRANCH="update-google-adapter-${ADAPTER_VERSION}"
-          git checkout -b "$BRANCH"
+
+          # Always reset branch to master — this branch belongs to automation
+          git checkout -B "$BRANCH"
+
           git add -A
+
+          # Skip if nothing changed vs master
+          if git diff --cached --quiet; then
+            echo "No changes to commit — already up to date for v$ADAPTER_VERSION"
+            exit 0
+          fi
+
           git commit -m "Pod GoogleMobileAds-HyBid-Adapters v: $ADAPTER_VERSION is added"
-          git push origin "$BRANCH"
-          gh pr create \
-            --title "Pod GoogleMobileAds-HyBid-Adapters v: $ADAPTER_VERSION is added" \
-            --body  "Automated update: bumps GoogleMobileAds-HyBid-Adapters to v$ADAPTER_VERSION (SPM)." \
-            --base  master \
-            --head  "$BRANCH"
+
+          # Force push — overwrites any manual changes on this branch
+          git push --force-with-lease origin "$BRANCH" 2>/dev/null \
+            || git push --force origin "$BRANCH"
+
+          # Open PR only if one doesn't already exist
+          if gh pr view "$BRANCH" --repo "$GITHUB_REPOSITORY" &>/dev/null; then
+            echo "PR already exists for $BRANCH — skipping"
+          else
+            gh pr create \
+              --title "Pod GoogleMobileAds-HyBid-Adapters v: $ADAPTER_VERSION is added" \
+              --body  "Automated update: bumps GoogleMobileAds-HyBid-Adapters to v$ADAPTER_VERSION (SPM)." \
+              --base  master \
+              --head  "$BRANCH"
+          fi
