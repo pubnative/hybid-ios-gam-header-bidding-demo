@@ -82,12 +82,12 @@ else:
     fields.append({'type': 'mrkdwn', 'text': f'*GHA Run:*\n<{build}|View run>'})
     payload = {
         'channel': channel,
-        'text': f'✅ {title} — PR opened for v{version}',
+        'text': f'📱 {title} — PR opened for v{version}',
         'attachments': [{
             'color': '#2EB67D',
             'blocks': [
                 {'type': 'header',
-                 'text': {'type': 'plain_text', 'text': f'✅ {title} Update'}},
+                 'text': {'type': 'plain_text', 'text': f'📱 {title} Update'}},
                 {'type': 'section', 'fields': fields},
                 footer,
             ],
