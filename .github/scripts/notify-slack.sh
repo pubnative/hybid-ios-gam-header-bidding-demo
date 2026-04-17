@@ -67,7 +67,7 @@ if status == 'failure':
             'color': '#E01E5A',
             'blocks': [
                 {'type': 'header',
-                 'text': {'type': 'plain_text', 'text': f'❌ 📱 {title} Update FAILED'}},
+                 'text': {'type': 'plain_text', 'text': f'❌ {title} Update FAILED'}},
                 {'type': 'section', 'fields': fields},
                 {'type': 'section',
                  'text': {'type': 'mrkdwn',
@@ -87,7 +87,7 @@ else:
             'color': '#2EB67D',
             'blocks': [
                 {'type': 'header',
-                 'text': {'type': 'plain_text', 'text': f'📱 {title} Update'}},
+                 'text': {'type': 'plain_text', 'text': f'✅ {title} Update'}},
                 {'type': 'section', 'fields': fields},
                 footer,
             ],
