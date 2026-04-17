@@ -62,12 +62,12 @@ if status == 'failure':
     fields.append({'type': 'mrkdwn', 'text': f'*GHA Run:*\n<{build}|View run>'})
     payload = {
         'channel': channel,
-        'text': f'❌ {title} update FAILED — v{version}',
+        'text': f'❌ 📱 {title} update FAILED — v{version}',
         'attachments': [{
             'color': '#E01E5A',
             'blocks': [
                 {'type': 'header',
-                 'text': {'type': 'plain_text', 'text': f'❌ {title} Update FAILED'}},
+                 'text': {'type': 'plain_text', 'text': f'❌ 📱 {title} Update FAILED'}},
                 {'type': 'section', 'fields': fields},
                 {'type': 'section',
                  'text': {'type': 'mrkdwn',
